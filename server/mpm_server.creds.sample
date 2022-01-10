@@ -1,0 +1,7 @@
+<?php
+$pgdb_host = 'localhost';
+$pgdb_port = '5432';
+$pgdb_dbname = 'mydb_name';
+$pgdb_user = 'username';
+$pgdb_password = 'password';
+?>

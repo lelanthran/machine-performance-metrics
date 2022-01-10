@@ -1,0 +1,7 @@
+#
+# This file is sourced by mpm_agent.sh. Put your credentials in here.
+# It must be stored in $HOME/.mpm_agent.creds
+#
+
+MPM_USER=lelanthran
+MPM_PASSWORD=12345
