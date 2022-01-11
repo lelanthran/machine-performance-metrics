@@ -1,0 +1,109 @@
+#-*- mode: org -*-
+
+#+OPTIONS: '
+#+TODO: TODO IN-PROGESS BLOCKED | DONE
+
+  
+#+title: Machine Performance Metrics: simple monitoring solution for Linux
+#+author: Lelanthran Manickum
+
+* [0/16] TASKLIST:
+ - [ ] (240m) javascript required:
+
+ - [ ] (60m)  cosmetic crap (css):
+
+ - [ ] (60m)  user.php:
+   user_session_load() => user_record if logged in, null if not
+   user_session_new(username, password) => user record if logged in, null if not
+   user_list(search_expr) => user_record[]
+   user_del(username) => true/false for success/failure
+   user_add() => user_record if added, null if not
+   user_mod() => user_record if modified, null if not
+
+ - [ ] (60m)  agent.php:
+   agent_list(search_expr) => agent_record[] of last uploaded data
+   agent_records(hostname, from, to) => agent_record[] of all data for that hostname in time period
+   agent_del() => true/false for success/failure
+   agent_add() => agent_record if added, null if not
+   agent_mod() => agent_record if modified, null if not
+
+ - [ ] (30m)  agent_threshold:
+   agent_thresholds(search_expr) => agent_threshold_record[] of all hostnames matching search_expr
+   agent_threshold_update(hostname,...) => true/false for success/fail
+
+ - [ ] (30m)  login.php: all usertypes:
+   present login form, handle login form (redirect to main.php)
+
+ - [ ] (30m)  userlist.php: admin only:
+   present list of users, each with links to edit/del/submit to user_action.php
+
+ - [ ] (30m)  user_action.php: admin only:
+   accepts a user action in JSON, returns error/success.
+
+ - [ ] (30m)  useradd.php: admin only:
+   present adduser form, handler adduser form (redirect to
+   listusers.php)
+
+ - [ ] (30m)  admin.php: admin only:
+   presents form to set the postgres dbname, password and user
+   presents a link to initialise said db
+   links to the other admin only pages
+
+ - [ ] (30m)  mpm_agent_add.php: operator,admin:
+   presents form to add a new mpm_agent,
+   handles form data for adding new mpm_agent.
+
+ - [ ] (30m)  mpm_agent_list.php: operator,admin:
+   lists all known mpm_agents + some info, with links to edit/delete/submit to
+   mpm_agent_action.php
+
+ - [ ] (30m)  mpm_agent_action.php: operator,admin:
+   accepts an mpm_agent action in JSON, returns error/success.
+
+ - [ ] (60m)  mpm_agent_edit.php: operator,admin:
+   presents form to edit single mpm_agent data.
+   handles form data for editing agent
+
+ - [ ] (30m)  operator: operator,admin:
+   links to all operator-only pages
+
+ - [ ]  dashboard: user,operator,admin:
+    -> unresolved alerts
+    -> top-ten offenders
+    -> top-ten MIA
+    -> search bar: find hostname
+
+
+* TODO Server implementation
+** Storage and UI
+Currently working on a shell script to administer the backend (create
+user, reset passwords, etc).
+
+Maybe a better idea is to have that as a web interface? Otherwise it's too
+much of a burden for people running on cheap hosts which don't give them
+control via a shell.
+
+Ship with a default admin login and password, stored in a file 'ui.creds'
+with fileperms limited as necessary. if file does not exist, the auth.php
+functions must create it.
+
+At some future point this can be changed to an SQLite file, but for now it
+is simpler and easier to just load all records from the file into memory.
+Once there are more than a few hundred records in the file, I can look
+into switching to SQLite.
+
+Each record is:
+
+   [ username, sessionid, session_expiry, salt, pwhash, usertype ]
+
+where 'usertype' is one of { admin, operator, viewer }. Note that the actual
+stored format is a simple serialized array of arrays.
+
+         user_record: full record of a single user
+         agent_record: full record of an agent based on an uploaded info (one row)
+         agent_threshold_record: single record of thresholds for single agent
+
+** Dashboard
+Dunno yet
+
+
