@@ -1,6 +1,6 @@
 <?php
 
-require 'user.php';
+require 'UserRecords.php';
 
 $output = 'Clean page';
 
