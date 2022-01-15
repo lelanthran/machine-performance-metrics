@@ -3,16 +3,16 @@
 #+OPTIONS: '
 #+TODO: TODO IN-PROGESS BLOCKED | DONE
 
-  
+
 #+title: Machine Performance Metrics: simple monitoring solution for Linux
 #+author: Lelanthran Manickum
 
-* [0/16] TASKLIST:
+* [1/16] TASKLIST:
  - [ ] (240m) javascript required:
 
  - [ ] (60m)  cosmetic crap (css):
 
- - [ ] (60m)  user.php:
+ - [X] (60m)  user.php:
    user_session_load() => user_record if logged in, null if not
    user_session_new(username, password) => user record if logged in, null if not
    user_list(search_expr) => user_record[]

@@ -1,6 +1,8 @@
 <?php
 
-require 'UserRecords.php';
+require_once 'UserRecords.php';
+require_once 'DBConnection.php';
+require_once 'mpm_server.creds';
 
 $output = 'Clean page';
 
@@ -25,6 +27,7 @@ function reload_session () {
    $output = 'full session record:<br><br>' . print_r ($record, true);
    return $output;
 }
+
 
 switch ($_REQUEST['action']) {
    case 'login_request_valid':

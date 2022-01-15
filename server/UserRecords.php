@@ -2,7 +2,7 @@
 
 declare (strict_types=1);
 
-require 'util.php';
+require_once 'util.php';
 
 // User type = dictionary of username, sessionid, session_expiry, salt,
 // pwhash, usertype
@@ -135,5 +135,6 @@ class UserRecords {
 }
 
 $g_userRecords = new UserRecords ();
+
 ?>
 
