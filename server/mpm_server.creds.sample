@@ -2,8 +2,8 @@
 
 require_once 'DBConnection.php';
 
-$g_dbconn_ro = new DBConnection ('localhost', 5432, 'mydb_name', 'rouser', 'ro12345');
-$g_dbconn_rw = new DBConnection ('localhost', 5432, 'mydb_name', 'rwuser', 'rw12345');
+$g_dbconn_ro = new DBConnection ('localhost', 5432, 'mpm_test', 'rouser', 'ro12345');
+$g_dbconn_rw = new DBConnection ('localhost', 5432, 'mpm_test', 'rwuser', 'rw12345');
 
 ?>
 
