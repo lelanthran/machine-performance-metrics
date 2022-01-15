@@ -15,6 +15,7 @@ Usage: pg_rouser <username> <password> <database>
 
 Create a readonly user for the specified database using the specified
 username and password.
+
 '
    exit -1;
 }

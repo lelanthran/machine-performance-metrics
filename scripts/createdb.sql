@@ -14,8 +14,8 @@ CREATE TABLE tbl_user (
 CREATE TABLE tbl_metrics (
    id                      BIGSERIAL PRIMARY KEY,
    c_user                  BIGINT,
-   c_server_ts             TIMESTAMP WITH TIMEZONE NOT NULL,
-   c_client_ts             TIMESTAMP WITH TIMEZONE NOT NULL,
+   c_server_ts             TIMESTAMP WITH TIME ZONE NOT NULL,
+   c_client_ts             TIMESTAMP WITH TIME ZONE NOT NULL,
    c_local_user            VARCHAR(250) NOT NULL,
    c_kernel                VARCHAR(250) NOT NULL,
    c_hostname              VARCHAR(250) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE tbl_metrics (
    c_diskio_discard        REAL NOT NULL,
    c_fs_count              SMALLINT NOT NULL,
    c_if_count              SMALLINT NOT NULL,
-   FOREIGN KEY (c_user) references (tbl_user)
+   FOREIGN KEY (c_user) references tbl_user(id)
 );
 
 
@@ -72,7 +72,7 @@ CREATE TABLE tbl_ifmetrics (
    c_ifname       VARCHAR(250) NOT NULL,
    c_input        REAL NOT NULL,
    c_output       REAL NOT NULL,
-   FOREIGN KEY (c_metrics) references (tbl_metrics)
+   FOREIGN KEY (c_metrics) references tbl_metrics (id)
 );
 
 
@@ -85,6 +85,6 @@ CREATE TABLE tbl_diskmetrics (
    c_used_mb         BIGINT NOT NULL,
    c_free_mb         BIGINT NOT NULL,
    c_usage           REAL NOT NULL,
-   FOREIGN KEY (c_metrics) references (tbl_metrics)
+   FOREIGN KEY (c_metrics) references tbl_metrics (id)
 );
 

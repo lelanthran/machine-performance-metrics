@@ -4,6 +4,9 @@ declare (strict_types=1);
 
 class DBConnection {
 
+   // TODO: Store the connection string and only make a connection when a
+   // query is made, otherwise we are using two database handles when only one
+   // is needed
    private $dbhandle = null;
 
    public function __construct (string $host, int $port, string $dbname,
@@ -27,7 +30,5 @@ class DBConnection {
       }
    }
 }
-
-$g_dbconn_ro = new DBConnection ('localhost', 5432, 'mydb_name', 'rouser', 'ro12345');
 
 ?>
