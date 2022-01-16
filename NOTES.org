@@ -7,14 +7,15 @@
 #+title: Machine Performance Metrics: simple monitoring solution for Linux
 #+author: Lelanthran Manickum
 
-* [2/18] TASKLIST:
+* [3/18] TASKLIST:
  - [ ] (240m) javascript required:
 
  - [ ] (60m)  cosmetic crap (css):
 
  - [X] (60m)  setup the test db with two users
 
- - [ ] (30m)  Idempotency of db schema
+ - [X] (30m)  Idempotency of db schema (fixed by providing .sql script for
+   user to run, if db is empty, admin is created).
 
  - [X] (60m)  user.php:
    user_session_load() => user_record if logged in, null if not
