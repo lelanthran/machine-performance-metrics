@@ -30,7 +30,42 @@ function reload_session () {
 
 function insert_random_metric () {
    // TODO: Incomplete
-   return 'inserting';
+   // $body = file_get_contents ("php://input");
+   // $object = json_decode ($body, true);
+   $object = array (
+   "MPM_USER"              => "lelanthran",
+   "MPM_PASSWORD"          => "12345",
+   "LOCAL_USER"            => "lelanthran",
+   "KERNEL"                => "Linux lelanthran-desktop 5.4.0-92-generic #103-Ubuntu SMP Fri Nov 26 16:13:00 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux",
+   "TSTAMP"                => "2022-01-16T11:09:53+02:00",
+   "HOSTNAME"              => "lelanthran-desktop",
+   "MEMORY_TOTAL"          => "16383064",
+   "MEMORY_USED"           => "4589080",
+   "MEMORY_FREE"           => "16383064",
+   "SWAP_TOTAL"            => "2097148",
+   "SWAP_USED"             => "130048",
+   "SWAP_FREE"             => "2097148",
+   "LOADAVG"               => "0.31",
+   "ARCH"                  => "x86_64",
+   "CPU_COUNT"             => "8",
+   "SOCKETS_OPEN"          => "1154",
+   "IFSTATS_COLS"          => "eno0 wlx386b1cd61f5c virbr0 Total ",
+   "IFSTATS_VALUES"        => "0.00 0.00 69.29 2.17 0.00 0.00 69.29 2.17",
+   "DISKIO_UNITS"          => "MB/s",
+   "DISKIO"                => "all 7.93 0.09 0.34 0.00 21319 81393 0",
+   "DISKIO_TPS"            => "7.93",
+   "DISKIO_READS"          => "0.09",
+   "DISKIO_WRITES"         => "0.34",
+   "DISKIO_DISCARDS"       => "0.00",
+   "DISKIO_READ"           => "21319",
+   "DISKIO_WRITE"          => "81393",
+   "DISKIO_DISCARD"        => "0",
+   "FS_COUNT"              => "3",
+   "FS_DATA"               => "/dev/sda2,524272,4,524268,1%,/boot/efi$/dev/sda5,1424825072,215491696,1136886400,16%,/$/dev/sdb2,1952506704,1226793928,725712776,63%,/mnt/sdb2",
+   "END"                   => "ignore"
+   );
+
+   return 'INCOMPLETE <br> ' . print_r ($object, true);
 }
 
 switch ($_REQUEST['action']) {

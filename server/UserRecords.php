@@ -66,8 +66,6 @@ class UserRecords {
    function session_find (string $sess_id) :array {
       $now = time ();
       foreach ($this->internal_allusers as $rec) {
-         echo "Checking [$sess_id] [" . $rec[1] . ']<br><br>';
-
          if (strcmp ($rec[1], $sess_id)===0 && $now < $rec[2]) {
             return $rec;
          }
@@ -107,8 +105,6 @@ class UserRecords {
          $this->user_del ($username);
          array_push ($this->internal_allusers, $record);
          $this->internal_user_savedb ();
-         echo print_r ($record, true) . "<br>";
-         echo print_r ($this->internal_allusers[0], true) . "<br>";
          return true;
       }
       return false;
