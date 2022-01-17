@@ -3,9 +3,9 @@
 -- already exist so that user does not use an existing db by mistake.
 
 
-CREATE TABLE tbl_user (
+CREATE TABLE tbl_agent (
    id          BIGSERIAL PRIMARY KEY,
-   c_user      VARCHAR(250) UNIQUE NOT NULL,
+   c_agent     VARCHAR(250) UNIQUE NOT NULL,
    c_salt      VARCHAR(250) NOT NULL,
    c_hash      VARCHAR(250) NOT NULL
 );
@@ -13,7 +13,7 @@ CREATE TABLE tbl_user (
 
 CREATE TABLE tbl_metrics (
    id                      BIGSERIAL PRIMARY KEY,
-   c_user                  BIGINT,
+   c_agent                 BIGINT,
    c_server_ts             TIMESTAMP WITH TIME ZONE NOT NULL,
    c_client_ts             TIMESTAMP WITH TIME ZONE NOT NULL,
    c_local_user            VARCHAR(250) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE tbl_metrics (
    c_diskio_discard        REAL NOT NULL,
    c_fs_count              SMALLINT NOT NULL,
    c_if_count              SMALLINT NOT NULL,
-   FOREIGN KEY (c_user) references tbl_user(id)
+   FOREIGN KEY (c_agent) references tbl_agent(id)
 );
 
 
