@@ -14,7 +14,7 @@ function bool_to_string (bool $val) :string {
 function util_agent_remove (string $agent_name) :bool {
    global $g_dbconn_rw;
 
-   $result = $g_dbconn_rw->query ('DELETE FROM tbl_user WHERE c_user=$1', array ($agent_name));
+   $result = $g_dbconn_rw->query ('DELETE FROM tbl_agent WHERE c_agent=$1', array ($agent_name));
    return DBConnection::querySucceeded ($result);
 }
 
@@ -25,7 +25,7 @@ function util_agent_add (string $agent_name, string $agent_password) :int {
    $hash = UserRecords::pwhash ($agent_name, $salt, $agent_password);
 
    $id = $g_dbconn_rw->query
-      ('INSERT INTO tbl_user (c_user, c_salt, c_hash) VALUES ($1, $2, $3) RETURNING id;',
+      ('INSERT INTO tbl_agent (c_agent, c_salt, c_hash) VALUES ($1, $2, $3) RETURNING id;',
          array ($agent_name, $salt, $hash));
 
    if (DBConnection::querySucceeded ($id) === true) {
@@ -46,7 +46,7 @@ function util_agent_store_metric (array $vdict) :int {
    // "END"
 
    $user_record = $this->dbhandle->query
-      ('SELECT id, c_salt, c_hash FROM tbl_user WHERE c_user=$1', array ($vdict['MPM_USER']));
+      ('SELECT id, c_salt, c_hash FROM tbl_agent WHERE c_agent=$1', array ($vdict['MPM_USER']));
    $id   = $user_record[1][0];
    $salt = $user_record[1][1];
    $hash = $user_record[1][2];
@@ -55,7 +55,7 @@ function util_agent_store_metric (array $vdict) :int {
    // TODO: This is incomplete
    //
    pg_prepare ('ins_metrics', 'INSERT INTO tbl_metrics ('
-                            . 'c_user, '
+                            . 'c_agent, '
                             . 'c_server_ts, '
                             . 'c_client_ts, '
                             . 'c_local_user, '
