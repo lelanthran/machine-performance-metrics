@@ -3,5 +3,5 @@
 # It must be stored in $HOME/.mpm_agent.creds
 #
 
-MPM_USER=lelanthran
-MPM_PASSWORD=12345
+MPM_USER=agent1
+MPM_PASSWORD=pass1

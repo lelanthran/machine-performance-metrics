@@ -35,54 +35,134 @@ function util_agent_add (string $agent_name, string $agent_password) :int {
    }
 }
 
+function util_preprint ($obj) {
+   echo '<pre>' . print_r ($obj, true) . '</pre>';
+}
+
 function util_agent_store_metric (array $vdict) :int {
 
-   // "MPM_USER"
-   // "MPM_PASSWORD"
-   // "IFSTATS_COLS"
-   // "IFSTATS_VALUES"
-   // "DISKIO"
-   // "FS_DATA"
-   // "END"
+   global $g_dbconn_rw;
 
-   $user_record = $this->dbhandle->query
+   // TODO: Parse ifstats and fsdata
+   // [FS_DATA] => /dev/sda2,524272,4,524268,1%,/boot/efi$/dev/sda5,1424825072,215491696,1136886400,16%,/$/dev/sdb2,1952506704,1226793928,725712776,63%,/mnt/sdb2
+   $fsdata = array ();
+   $fsdata_rows = explode ('$', $vdict['FS_DATA']);
+   $fs_total = 0;
+   $fs_used = 0;
+   $fs_free = 0;
+   foreach ($fsdata_rows as $fsdata_row) {
+      $fields = explode (',', $fsdata_row);
+      $row = array ();
+      $row['FS_DEV']       = $fields[0];
+      $row['FS_TOTAL']     = $fields[1];
+      $row['FS_USED']      = $fields[2];
+      $row['FS_AVAILABLE'] = $fields[3];
+      $row['FS_UTIL']      = explode ('%', $fields[4])[0];
+      $row['FS_MNTPT']     = $fields[5];
+      array_push ($fsdata, $row);
+      $fs_total += intval ($row['FS_TOTAL']);
+      $fs_used  += intval ($row['FS_USED']);
+      $fs_free  += intval ($row['FS_AVAILABLE']);
+   }
+
+   // [IFSTATS_COLS] => eno0 wlx386b1cd61f5c virbr0 Total
+   // [IFSTATS_VALUES] => 0.00 0.00 69.29 2.17 0.00 0.00 69.29 2.17
+   $ifstats = array ();
+   $ifstats_cols = explode (' ', $vdict['IFSTATS_COLS']);
+   $ifstats_values = explode (' ', $vdict['IFSTATS_VALUES']);
+   $if_input = 0;
+   $if_output = 0;
+   $i = 0;
+   foreach ($ifstats_cols as $iface) {
+      $ifstat = array ();
+      $ifstat['IF_NAME']   = $iface;
+      $ifstat['IF_INPUT']  = $ifstats_values[$i++];
+      $ifstat['IF_OUTPUT'] = $ifstats_values[$i++];
+      if ((strcmp ($ifstat['IF_INPUT'], '0.00')!=0) || (strcmp ($ifstat['IF_OUTPUT'], '0.00')!=0))
+         array_push ($ifstats, $ifstat);
+      $if_input += floatval ($ifstat['IF_INPUT']);
+      $if_output += floatval ($ifstat['IF_OUTPUT']);
+   }
+   $if_total = $if_input + $if_output;
+
+   $agent = $g_dbconn_rw->query
       ('SELECT id, c_salt, c_hash FROM tbl_agent WHERE c_agent=$1', array ($vdict['MPM_USER']));
-   $id   = $user_record[1][0];
-   $salt = $user_record[1][1];
-   $hash = $user_record[1][2];
 
-   pg_send_execute ($this->rwdb, 'START TRANSACTION;', array ());
-   // TODO: This is incomplete
-   //
-   pg_prepare ('ins_metrics', 'INSERT INTO tbl_metrics ('
-                            . 'c_agent, '
-                            . 'c_server_ts, '
-                            . 'c_client_ts, '
-                            . 'c_local_user, '
-                            . 'c_kernel, '
-                            . 'c_hostname, '
-                            . 'c_arch, '
-                            . 'c_mem_total, '
-                            . 'c_mem_used, '
-                            . 'c_mem_free, '
-                            . 'c_swap_total, '
-                            . 'c_swap_used, '
-                            . 'c_swap_free, '
-                            . 'c_cpu_count, '
-                            . 'c_loadavg, '
-                            . 'c_open_sockets, '
-                            . 'c_diskio_units, '
-                            . 'c_diskio_tp_s, '
-                            . 'c_diskio_read_s, '
-                            . 'c_diskio_write_s, '
-                            . 'c_diskio_discard_s, '
-                            . 'c_diskio_tp, '
-                            . 'c_diskio_read, '
-                            . 'c_diskio_write, '
-                            . 'c_diskio_discard, '
-                            . 'c_fs_count, '
-                            . 'c_if_count'
-                            . ') values ('
+   if (count ($agent) <= 1) {
+      error_log ("[" . $vdict['MPM_USER'] . "]: agent does not exist");
+      return -1;
+   }
+
+   $agent_id = $agent[1][0];
+   $salt     = $agent[1][1];
+   $hash     = $agent[1][2];
+
+   // $g_dbconn_rw->query ('START TRANSACTION;', array ());
+
+   $ins_fsdata_query = 'INSERT INTO tbl_diskmetrics ('
+                            . 'c_metrics, '
+                            . 'c_fs, '
+                            . 'c_mountpoint, '
+                            . 'c_size_mb, '
+                            . 'c_used_mb, '
+                            . 'c_free_mb, '
+                            . 'c_usage '
+                     . ') VALUES ('
+                            . '$1, '
+                            . '$2, '
+                            . '$3, '
+                            . '$4, '
+                            . '$5, '
+                            . '$6, '
+                            . '$7 '
+                     . ');';
+
+   $ins_ifstats_query = 'INSERT INTO tbl_ifmetrics ('
+                            . 'c_metrics, '
+                            . 'c_ifname, '
+                            . 'c_input, '
+                            . 'c_output '
+                     . ') VALUES ('
+                            . '$1, '
+                            . '$2, '
+                            . '$3, '
+                            . '$4 '
+                     . ');';
+
+   $ins_metrics_query = 'INSERT INTO tbl_metrics ('
+                            . 'c_agent, '                   // 1
+                            . 'c_server_ts, '               // 2
+                            . 'c_client_ts, '               // 3
+                            . 'c_local_user, '              // 4
+                            . 'c_kernel, '                  // 5
+                            . 'c_hostname, '                // 6
+                            . 'c_arch, '                    // 7
+                            . 'c_mem_total, '               // 8
+                            . 'c_mem_used, '                // 9
+                            . 'c_mem_free, '                // 10
+                            . 'c_swap_total, '              // 11
+                            . 'c_swap_used, '               // 12
+                            . 'c_swap_free, '               // 13
+                            . 'c_cpu_count, '               // 14
+                            . 'c_loadavg, '                 // 15
+                            . 'c_open_sockets, '            // 16
+                            . 'c_diskio_units, '            // 17
+                            . 'c_diskio_tp_s, '             // 18
+                            . 'c_diskio_read_s, '           // 19
+                            . 'c_diskio_write_s, '          // 20
+                            . 'c_diskio_discard_s, '        // 21
+                            . 'c_diskio_read, '             // 22
+                            . 'c_diskio_write, '            // 23
+                            . 'c_diskio_discard, '          // 24
+                            . 'c_fs_count, '                // 25
+                            . 'c_if_count, '                // 26
+                            . 'c_fs_total, '                // 27
+                            . 'c_fs_used, '                 // 28
+                            . 'c_fs_free, '                 // 29
+                            . 'c_if_input, '                // 30
+                            . 'c_if_output, '               // 31
+                            . 'c_if_total'                  // 32
+                  . ') VALUES ('
                             . '$1, '
                             . '$2, '
                             . '$3, '
@@ -109,36 +189,91 @@ function util_agent_store_metric (array $vdict) :int {
                             . '$24, '
                             . '$25, '
                             . '$26, '
-                            . '$27'
-                            . ')');
-   $ins_params = array ();
-   array_push ($ins_params, $this->user_record);
-   array_push (time ());
-   array_push ($vdict['TSTAMP']);
-   array_push ($vdict['LOCAL_USER']);
-   array_push ($vdict['KERNEL']);
-   array_push ($vdict['HOSTNAME']);
-   array_push ($vdict['ARCH']);
-   array_push ($vdict['MEMORY_TOTAL']);
-   array_push ($vdict['MEMORY_USED']);
-   array_push ($vdict['MEMORY_FREE']);
-   array_push ($vdict['SWAP_TOTAL']);
-   array_push ($vdict['SWAP_USED']);
-   array_push ($vdict['SWAP_FREE']);
-   array_push ($vdict['CPU_COUNT']);
-   array_push ($vdict['LOADAVG']);
-   array_push ($vdict['SOCKETS_OPEN']);
-   array_push ($vdict['DISKIO_UNITS']);
-   array_push ($vdict['DISKIO_TPS']);
-   array_push ($vdict['DISKIO_READS']);
-   array_push ($vdict['DISKIO_WRITES']);
-   array_push ($vdict['DISKIO_DISCARDS']);
-   array_push ($vdict['DISKIO_TP']);
-   array_push ($vdict['DISKIO_READ']);
-   array_push ($vdict['DISKIO_WRITE']);
-   array_push ($vdict['DISKIO_DISCARD']);
-   array_push ($vdict['FS_COUNT']);
+                            . '$27, '
+                            . '$28, '
+                            . '$29, '
+                            . '$30, '
+                            . '$31, '
+                            . '$32  '
+                  . ') RETURNING id;';
 
-   pg_send_execute ($this->rwdb, 'COMMIT;', array ());
+   $ins_metrics_params = array ();
+
+   array_push ($ins_metrics_params, $agent_id);                   // 1
+   array_push ($ins_metrics_params, date ("c", time ()));                     // 2
+   array_push ($ins_metrics_params, $vdict['TSTAMP']);            // 3
+   array_push ($ins_metrics_params, $vdict['LOCAL_USER']);        // 4
+   array_push ($ins_metrics_params, $vdict['KERNEL']);            // 5
+   array_push ($ins_metrics_params, $vdict['HOSTNAME']);          // 6
+   array_push ($ins_metrics_params, $vdict['ARCH']);              // 7
+   array_push ($ins_metrics_params, $vdict['MEMORY_TOTAL']);      // 8
+   array_push ($ins_metrics_params, $vdict['MEMORY_USED']);       // 9
+   array_push ($ins_metrics_params, $vdict['MEMORY_FREE']);       // 10
+   array_push ($ins_metrics_params, $vdict['SWAP_TOTAL']);        // 11
+   array_push ($ins_metrics_params, $vdict['SWAP_USED']);         // 12
+   array_push ($ins_metrics_params, $vdict['SWAP_FREE']);         // 13
+   array_push ($ins_metrics_params, $vdict['CPU_COUNT']);         // 14
+   array_push ($ins_metrics_params, $vdict['LOADAVG']);           // 15
+   array_push ($ins_metrics_params, $vdict['SOCKETS_OPEN']);      // 16
+   array_push ($ins_metrics_params, $vdict['DISKIO_UNITS']);      // 17
+   array_push ($ins_metrics_params, $vdict['DISKIO_TPS']);        // 18
+   array_push ($ins_metrics_params, $vdict['DISKIO_READS']);      // 19
+   array_push ($ins_metrics_params, $vdict['DISKIO_WRITES']);     // 20
+   array_push ($ins_metrics_params, $vdict['DISKIO_DISCARDS']);   // 21
+   array_push ($ins_metrics_params, $vdict['DISKIO_READ']);       // 22
+   array_push ($ins_metrics_params, $vdict['DISKIO_WRITE']);      // 23
+   array_push ($ins_metrics_params, $vdict['DISKIO_DISCARD']);    // 24
+   array_push ($ins_metrics_params, $vdict['FS_COUNT']);          // 25
+   array_push ($ins_metrics_params, count ($ifstats));            // 26
+   array_push ($ins_metrics_params, $fs_total);                   // 27
+   array_push ($ins_metrics_params, $fs_used);                    // 28
+   array_push ($ins_metrics_params, $fs_free);                    // 29
+   array_push ($ins_metrics_params, $if_input);                   // 30
+   array_push ($ins_metrics_params, $if_output);                  // 31
+   array_push ($ins_metrics_params, $if_total);                   // 32
+
+   $result = $g_dbconn_rw->query ($ins_metrics_query, $ins_metrics_params);
+   if (DBConnection::querySucceeded ($result) === false) {
+      error_log ("Query failure, aborting");
+      $g_dbconn_rw->query ('ROLLBACK;', array ());
+      return -1;
+   }
+   $metric_id = $result[1][0];
+
+   foreach ($fsdata as $fs) {
+      $ins_fsdata_params = array (
+         $metric_id,
+         $fs['FS_DEV'],
+         $fs['FS_MNTPT'],
+         $fs['FS_TOTAL'],
+         $fs['FS_USED'],
+         $fs['FS_AVAILABLE'],
+         $fs['FS_UTIL'],
+      );
+      $result = $g_dbconn_rw->query ($ins_fsdata_query, $ins_fsdata_params);
+      if (DBConnection::querySucceeded ($result) === false) {
+         error_log ("Query failure on diskmetrics insertion, aborting");
+         return -1;
+      }
+   }
+
+   foreach ($ifstats as $iface) {
+      $ins_ifstats_params = array (
+         $metric_id,
+         $iface['IF_NAME'],
+         $iface['IF_INPUT'],
+         $iface['IF_OUTPUT'],
+      );
+      $result = $g_dbconn_rw->query ($ins_ifstats_query, $ins_ifstats_params);
+      if (DBConnection::querySucceeded ($result) === false) {
+         error_log ("Query failure on ifmetrics insertion, aborting");
+         return -1;
+      }
+   }
+
+   // $g_dbconn_rw->query ('COMMIT;', array ());
+
+   return intval ($metric_id);
 }
+
 ?>

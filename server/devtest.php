@@ -33,9 +33,9 @@ function insert_random_metric () {
    // $body = file_get_contents ("php://input");
    // $object = json_decode ($body, true);
    $object = array (
-   "MPM_USER"              => "lelanthran",
+   "MPM_USER"              => "agent1",
    "MPM_PASSWORD"          => "12345",
-   "LOCAL_USER"            => "lelanthran",
+   "LOCAL_USER"            => "pass1",
    "KERNEL"                => "Linux lelanthran-desktop 5.4.0-92-generic #103-Ubuntu SMP Fri Nov 26 16:13:00 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux",
    "TSTAMP"                => "2022-01-16T11:09:53+02:00",
    "HOSTNAME"              => "lelanthran-desktop",
@@ -49,7 +49,7 @@ function insert_random_metric () {
    "ARCH"                  => "x86_64",
    "CPU_COUNT"             => "8",
    "SOCKETS_OPEN"          => "1154",
-   "IFSTATS_COLS"          => "eno0 wlx386b1cd61f5c virbr0 Total ",
+   "IFSTATS_COLS"          => "eno0 wlx386b1cd61f5c virbr0 Total",
    "IFSTATS_VALUES"        => "0.00 0.00 69.29 2.17 0.00 0.00 69.29 2.17",
    "DISKIO_UNITS"          => "MB/s",
    "DISKIO"                => "all 7.93 0.09 0.34 0.00 21319 81393 0",
@@ -65,7 +65,7 @@ function insert_random_metric () {
    "END"                   => "ignore"
    );
 
-   return 'INCOMPLETE <br> ' . print_r ($object, true);
+   return 'New tbl_metric id:<br> ' . util_agent_store_metric ($object);
 }
 
 switch ($_REQUEST['action']) {
@@ -121,10 +121,10 @@ switch ($_REQUEST['action']) {
       <li><a href=devtest.php?action=basic_pgrw>Test RW db statement</a></li>
       <li><a href=devtest.php?action=insert_metric>Insert Random metric</a></li>
    </ul>
-      <tt>
+      <pre>
 <?php
-echo $output;
+util_preprint ($output);
 ?>
-      </tt>
+      </pre>
    </body>
 </html>

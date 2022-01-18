@@ -46,11 +46,11 @@ DISKIO_READ="`echo $DISKIO | cut -f 6 -d \  `"
 DISKIO_WRITE="`echo $DISKIO | cut -f 7 -d \  `"
 DISKIO_DISCARD="`echo $DISKIO | cut -f 8 -d \  `"
 
-ifstat -T 1 1 | sed 's/^ \+//g' > /tmp/ifstats
+ifstat -T 1 1 | sed 's/^ \+//g; s/ \+$//g' > /tmp/ifstats
 IFSTATS_COLS="`head -n1 /tmp/ifstats`"
 IFSTATS_VALUES="`tail -n1 /tmp/ifstats`"
 
-df | grep -E [1-9]% | grep -v tmpfs | sed 's/ \+/,/g' | sort > /tmp/df
+df -B 1M | grep -E [1-9]% | grep -v tmpfs | sed 's/ \+/,/g' | sort > /tmp/df
 FS_COUNT="`wc -l /tmp/df | cut -f 1 -d \  `"
 TMP="`cat /tmp/df`"
 FS_DATA="`echo $TMP | sed 's/ /$/g'`"

@@ -43,6 +43,10 @@ class DBConnection {
       $name = util_randstring (25);
       $deallocate = "DEALLOCATE \"$name\";";
 
+      $prev_result = true;
+      while ($prev_result!==false)
+         $prev_result = pg_get_result ($this->dbhandle);
+
       pg_prepare ($this->dbhandle, $name, $query);
       $pgresult = pg_execute ($this->dbhandle, $name, $params);
 
