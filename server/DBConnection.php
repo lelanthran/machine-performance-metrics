@@ -30,16 +30,11 @@ class DBConnection {
       }
    }
 
-   public static function querySucceeded ($query_results) :bool {
-      if (   is_array ($query_results) === true
-          && is_array ($query_results[0]) === true
-          && $query_results[0][0] !== false) {
-          return true;
-      }
-      return false;
+   public static function querySucceeded ($query_results) {
+      return $query_results;
    }
 
-   public function query (string $query, array $params) :array {
+   public function query (string $query, array $params) {
       $name = util_randstring (25);
       $deallocate = "DEALLOCATE \"$name\";";
 
@@ -51,7 +46,7 @@ class DBConnection {
       $pgresult = pg_execute ($this->dbhandle, $name, $params);
 
       if ($pgresult === false) {
-         return array (array (false), array (false));
+         return false;
       }
 
       $headers = array ();
