@@ -15,6 +15,7 @@ if (strlen ($g_sess_user_name) <= 2) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="mpm.css">
   <script type="text/javascript" src="mpm.js"></script>
+  <script type="text/javascript" src="LiveTable.js"></script>
 </head>
 <body onload="document.getElementById('btnAdministration').click()">
 
@@ -54,6 +55,16 @@ foreach ($tabcfg as $tab) {
       </ul>
     </p>
   </div>
+
+<script>
+var userAdminTable = new LiveTable ();
+userAdminTable.populate ([ [1.1, 1.2, 1.3],
+                           [2.1, 2.2, 2.3],
+                           [3.1, 3.2, 3.3],
+                         ]);
+userAdminTable.render ('Administration');
+
+</script>
 
   <div id="Operations" class="tabcontent">
     <h3>Operations</h3>
