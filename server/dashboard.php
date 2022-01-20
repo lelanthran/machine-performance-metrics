@@ -57,11 +57,16 @@ foreach ($tabcfg as $tab) {
   </div>
 
 <script>
-var userAdminTable = new LiveTable ();
-userAdminTable.populate ([ [1.1, 1.2, 1.3],
-                           [2.1, 2.2, 2.3],
-                           [3.1, 3.2, 3.3],
-                         ]);
+function genData () {
+  return {
+  "table": [ [1.1, 1.2, 1.3],
+             [2.1, 2.2, 2.3],
+             [3.1, 3.2, 3.3],
+           ]
+  };
+}
+
+var userAdminTable = new LiveTable (genData);
 userAdminTable.render ('Administration');
 
 </script>

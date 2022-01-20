@@ -31,6 +31,7 @@ function util_agent_add (string $agent_name, string $agent_password) :int {
    if (DBConnection::querySucceeded ($id) === true) {
       return (int)$id[1][0];
    } else {
+      error_log ("Failure");
       return -1;
    }
 }
@@ -146,22 +147,25 @@ function util_agent_store_metric (array $vdict) :int {
                             . 'c_cpu_count, '               // 14
                             . 'c_loadavg, '                 // 15
                             . 'c_open_sockets, '            // 16
-                            . 'c_diskio_units, '            // 17
-                            . 'c_diskio_tp_s, '             // 18
-                            . 'c_diskio_read_s, '           // 19
-                            . 'c_diskio_write_s, '          // 20
-                            . 'c_diskio_discard_s, '        // 21
-                            . 'c_diskio_read, '             // 22
-                            . 'c_diskio_write, '            // 23
-                            . 'c_diskio_discard, '          // 24
-                            . 'c_fs_count, '                // 25
-                            . 'c_if_count, '                // 26
-                            . 'c_fs_total, '                // 27
-                            . 'c_fs_used, '                 // 28
-                            . 'c_fs_free, '                 // 29
-                            . 'c_if_input, '                // 30
-                            . 'c_if_output, '               // 31
-                            . 'c_if_total'                  // 32
+                            . 'c_fd_allocated, '            // 17
+                            . 'c_fd_unused, '               // 18
+                            . 'c_fd_limit, '                // 19
+                            . 'c_diskio_units, '            // 20
+                            . 'c_diskio_tp_s, '             // 21
+                            . 'c_diskio_read_s, '           // 22
+                            . 'c_diskio_write_s, '          // 23
+                            . 'c_diskio_discard_s, '        // 24
+                            . 'c_diskio_read, '             // 25
+                            . 'c_diskio_write, '            // 26
+                            . 'c_diskio_discard, '          // 27
+                            . 'c_fs_count, '                // 28
+                            . 'c_if_count, '                // 29
+                            . 'c_fs_total, '                // 30
+                            . 'c_fs_used, '                 // 31
+                            . 'c_fs_free, '                 // 32
+                            . 'c_if_input, '                // 33
+                            . 'c_if_output, '               // 34
+                            . 'c_if_total'                  // 35
                   . ') VALUES ('
                             . '$1, '
                             . '$2, '
@@ -194,13 +198,16 @@ function util_agent_store_metric (array $vdict) :int {
                             . '$29, '
                             . '$30, '
                             . '$31, '
-                            . '$32  '
+                            . '$32, '
+                            . '$33, '
+                            . '$34, '
+                            . '$35  '
                   . ') RETURNING id;';
 
    $ins_metrics_params = array ();
 
    array_push ($ins_metrics_params, $agent_id);                   // 1
-   array_push ($ins_metrics_params, date ("c", time ()));                     // 2
+   array_push ($ins_metrics_params, date ("c", time ()));         // 2
    array_push ($ins_metrics_params, $vdict['TSTAMP']);            // 3
    array_push ($ins_metrics_params, $vdict['LOCAL_USER']);        // 4
    array_push ($ins_metrics_params, $vdict['KERNEL']);            // 5
@@ -215,22 +222,25 @@ function util_agent_store_metric (array $vdict) :int {
    array_push ($ins_metrics_params, $vdict['CPU_COUNT']);         // 14
    array_push ($ins_metrics_params, $vdict['LOADAVG']);           // 15
    array_push ($ins_metrics_params, $vdict['SOCKETS_OPEN']);      // 16
-   array_push ($ins_metrics_params, $vdict['DISKIO_UNITS']);      // 17
-   array_push ($ins_metrics_params, $vdict['DISKIO_TPS']);        // 18
-   array_push ($ins_metrics_params, $vdict['DISKIO_READS']);      // 19
-   array_push ($ins_metrics_params, $vdict['DISKIO_WRITES']);     // 20
-   array_push ($ins_metrics_params, $vdict['DISKIO_DISCARDS']);   // 21
-   array_push ($ins_metrics_params, $vdict['DISKIO_READ']);       // 22
-   array_push ($ins_metrics_params, $vdict['DISKIO_WRITE']);      // 23
-   array_push ($ins_metrics_params, $vdict['DISKIO_DISCARD']);    // 24
-   array_push ($ins_metrics_params, $vdict['FS_COUNT']);          // 25
-   array_push ($ins_metrics_params, count ($ifstats));            // 26
-   array_push ($ins_metrics_params, $fs_total);                   // 27
-   array_push ($ins_metrics_params, $fs_used);                    // 28
-   array_push ($ins_metrics_params, $fs_free);                    // 29
-   array_push ($ins_metrics_params, $if_input);                   // 30
-   array_push ($ins_metrics_params, $if_output);                  // 31
-   array_push ($ins_metrics_params, $if_total);                   // 32
+   array_push ($ins_metrics_params, $vdict['FD_ALLOCATED']);      // 17
+   array_push ($ins_metrics_params, $vdict['FD_UNUSED']);         // 18
+   array_push ($ins_metrics_params, $vdict['FD_LIMIT']);          // 19
+   array_push ($ins_metrics_params, $vdict['DISKIO_UNITS']);      // 20
+   array_push ($ins_metrics_params, $vdict['DISKIO_TPS']);        // 21
+   array_push ($ins_metrics_params, $vdict['DISKIO_READS']);      // 22
+   array_push ($ins_metrics_params, $vdict['DISKIO_WRITES']);     // 23
+   array_push ($ins_metrics_params, $vdict['DISKIO_DISCARDS']);   // 24
+   array_push ($ins_metrics_params, $vdict['DISKIO_READ']);       // 25
+   array_push ($ins_metrics_params, $vdict['DISKIO_WRITE']);      // 26
+   array_push ($ins_metrics_params, $vdict['DISKIO_DISCARD']);    // 27
+   array_push ($ins_metrics_params, $vdict['FS_COUNT']);          // 28
+   array_push ($ins_metrics_params, count ($ifstats));            // 29
+   array_push ($ins_metrics_params, $fs_total);                   // 30
+   array_push ($ins_metrics_params, $fs_used);                    // 31
+   array_push ($ins_metrics_params, $fs_free);                    // 32
+   array_push ($ins_metrics_params, $if_input);                   // 33
+   array_push ($ins_metrics_params, $if_output);                  // 34
+   array_push ($ins_metrics_params, $if_total);                   // 35
 
    $result = $g_dbconn_rw->query ($ins_metrics_query, $ins_metrics_params);
    if (DBConnection::querySucceeded ($result) === false) {

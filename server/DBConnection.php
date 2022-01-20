@@ -31,7 +31,10 @@ class DBConnection {
    }
 
    public static function querySucceeded ($query_results) {
-      return $query_results;
+      if ($query_results===false)
+         return false;
+      else
+         return true;
    }
 
    public function query (string $query, array $params) {

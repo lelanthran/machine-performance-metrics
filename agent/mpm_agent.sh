@@ -28,6 +28,10 @@ HOSTNAME="`hostname -f`"
 
 TMPVAR="`free`"
 STATS_MEMORY="`echo $TMPVAR | cut -f8-17 -d \  `"
+FD_ALL="`cat /proc/sys/fs/file-nr`"
+FD_ALLOCATED="`echo $FD_ALL | cut -f 1 -d \  `"
+FD_UNUSED="`echo $FD_ALL | cut -f 2 -d \  `"
+FD_LIMIT="`echo $FD_ALL | cut -f 3 -d \  `"
 MEMORY_TOTAL="`echo $STATS_MEMORY | cut -f 1 -d \  `"
 MEMORY_USED="`echo $STATS_MEMORY | cut -f 2 -d \  `"
 MEMORY_FREE="`echo $STATS_MEMORY | cut -f 3 -d \  `"
@@ -76,6 +80,9 @@ echo '   '\"LOADAVG\"':             ' \"$LOADAVG\",           >> /tmp/mpm_agent.
 echo '   '\"ARCH\"':                ' \"$ARCH\",              >> /tmp/mpm_agent.body
 echo '   '\"CPU_COUNT\"':           ' \"$CPU_COUNT\",         >> /tmp/mpm_agent.body
 echo '   '\"SOCKETS_OPEN\"':        ' \"$SOCKETS_OPEN\",      >> /tmp/mpm_agent.body
+echo '   '\"FD_ALLOCATED\"':        ' \"$FD_ALLOCATED\",      >> /tmp/mpm_agent.body
+echo '   '\"FD_UNUSED\"':           ' \"$FD_UNUSED\",         >> /tmp/mpm_agent.body
+echo '   '\"FD_LIMIT\"':            ' \"$FD_LIMIT\",          >> /tmp/mpm_agent.body
 echo '   '\"IFSTATS_COLS\"':        ' \"$IFSTATS_COLS\",      >> /tmp/mpm_agent.body
 echo '   '\"IFSTATS_VALUES\"':      ' \"$IFSTATS_VALUES\",    >> /tmp/mpm_agent.body
 echo '   '\"DISKIO_UNITS\"':        ' \"$DISKIO_UNITS\",      >> /tmp/mpm_agent.body
