@@ -62,11 +62,20 @@ function genData () {
   "table": [ [1.1, 1.2, 1.3],
              [2.1, 2.2, 2.3],
              [3.1, 3.2, 3.3],
+             [4.1, 4.2, 4.3],
+             [5.1, 5.2, 5.3],
+             [6.1, 6.2, 6.3],
+             [7.1, 7.2, 7.3],
            ]
   };
 }
 
 var userAdminTable = new LiveTable (genData);
+userAdminTable.tableClassList = "test_tableClassList";
+userAdminTable.theadClassList = "test_theadClassList";
+userAdminTable.tbodyClassList = "test_tbodyClassList";
+userAdminTable.trOddClassList = "test_trOddClassList";
+userAdminTable.trEvenClassList = "test_trEvenClassList";
 userAdminTable.render ('Administration');
 
 </script>
