@@ -10,15 +10,9 @@ function createAttachedElement (elType, parentNode, classList) {
   return element;
 }
 
-function createColumnHeader (text, parentNode) {
-  // TODO: Add in clickable up/down arrows that call the resort function
-  var ret = createAttachedElement ("td", parentNode, "");
-  ret.innerHTML = text;
-  return ret;
-}
-
 class LiveTable {
   constructor (dataFunc, recUpdateFunc, recRemoveFunc) {
+    this.parentNodeId = null;
     this.parentNode = null;
     this.element = null;
 
@@ -30,9 +24,44 @@ class LiveTable {
     this.trOddClassList = null;
     this.thClassList = null;
     this.tdClassList = null;
+    this.sortBtnClassList = null;
 
     this.dataFunc = dataFunc;
+    this.sortFuncs = new Object ();
     this.data = null;
+  }
+
+  setSortFunc (colNumber, func) {
+    this.sortFuncs[colNumber] = func;
+  }
+
+  sortColumn (colNumber, direction) {
+    var sortFunc = this.sortFuncs[colNumber];
+    if (sortFunc == undefined) {
+      sortFunc = (lhs, rhs) => {
+        return lhs - rhs;
+      }
+    }
+    console.log (`LiveTable sorting: ${colNumber}, ${direction}, ${sortFunc}`);
+    this.data.table.sort (sortFunc);
+    if (direction === 1)
+      this.data.table.reverse ();
+
+    this.render ();
+  }
+
+  createColumnHeader (colNumber, text, parentNode) {
+
+    var element = createAttachedElement ("td", parentNode, "");
+    var btn = createAttachedElement ("button", element, this.sortBtnClassList);
+    btn.sortDirection = 0;
+
+    btn.onclick = (evt) => {
+      this.sortColumn (colNumber, btn.sortDirection++ % 2);
+      btn.innerHTML = "clicked";
+    }
+    btn.innerHTML = text;
+    return element;
   }
 
   createTableElement () {
@@ -47,7 +76,7 @@ class LiveTable {
     // TODO: Append empty cell here (header cell in this column is empty, data
     // cells have the edit/delete/checkbox elements).
     for (var i=0; i<this.data.table[0].length; i++) {
-      var colName = createColumnHeader (this.data.table[0][i], trhead);
+      var colName = this.createColumnHeader (i, this.data.table[0][i], trhead);
       trhead.appendChild (colName);
     }
     // TODO: Append empty cell here (header cell in this column is empty, data
@@ -69,7 +98,7 @@ class LiveTable {
     return element;
   }
 
-  render (parentNodeId) {
+  render () {
     if (this.data == null) {
       this.data = this.dataFunc ({
         "Page":       this.current_page,
@@ -77,16 +106,18 @@ class LiveTable {
       });
     }
 
-    if (this.element == null) {
-      this.element = this.createTableElement ();
-    }
-
     if (this.parentNode) {
       this.parentNode.removeChild (this.element);
       this.parentNode = null;
     }
 
-    this.parentNode = document.getElementById (parentNodeId);
+    if (this.element != null) {
+      this.element = null;
+    }
+
+    this.element = this.createTableElement ();
+
+    this.parentNode = document.getElementById (this.parentNodeId);
     this.parentNode.appendChild (this.element);
   }
 }

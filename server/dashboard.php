@@ -76,7 +76,8 @@ userAdminTable.theadClassList = "test_theadClassList";
 userAdminTable.tbodyClassList = "test_tbodyClassList";
 userAdminTable.trOddClassList = "test_trOddClassList";
 userAdminTable.trEvenClassList = "test_trEvenClassList";
-userAdminTable.render ('Administration');
+userAdminTable.parentNodeId  = 'Administration';
+userAdminTable.render ();
 
 </script>
 
