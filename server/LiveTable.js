@@ -1,4 +1,8 @@
 
+function stringCompare (str1, str2) {
+  return str1 < str2 ? -1 : str1 > str2;
+}
+
 function createAttachedElement (elType, parentNode, classList) {
   var element = document.createElement (elType);
   if (classList != null) {
@@ -29,6 +33,8 @@ class LiveTable {
     this.dataFunc = dataFunc;
     this.sortFuncs = new Object ();
     this.data = null;
+    this.dataHeaders = null;
+    this.columnsSortDirections = [];
   }
 
   setSortFunc (colNumber, func) {
@@ -39,11 +45,16 @@ class LiveTable {
     var sortFunc = this.sortFuncs[colNumber];
     if (sortFunc == undefined) {
       sortFunc = (lhs, rhs) => {
-        return lhs - rhs;
+        lhs = lhs + '';
+        rhs = rhs + '';
+        return stringCompare (lhs, rhs);
       }
     }
-    console.log (`LiveTable sorting: ${colNumber}, ${direction}, ${sortFunc}`);
-    this.data.table.sort (sortFunc);
+    var rowSortFunc = (lhs, rhs) => {
+        return sortFunc (lhs[colNumber], rhs[colNumber]);
+    }
+    this.data.table.sort (rowSortFunc);
+
     if (direction === 1)
       this.data.table.reverse ();
 
@@ -54,10 +65,12 @@ class LiveTable {
 
     var element = createAttachedElement ("td", parentNode, "");
     var btn = createAttachedElement ("button", element, this.sortBtnClassList);
-    btn.sortDirection = 0;
+    if (this.columnsSortDirections[colNumber] == undefined) {
+      this.columnsSortDirections[colNumber] = 0;
+    }
 
     btn.onclick = (evt) => {
-      this.sortColumn (colNumber, btn.sortDirection++ % 2);
+      this.sortColumn (colNumber, this.columnsSortDirections[colNumber]++ % 2);
       btn.innerHTML = "clicked";
     }
     btn.innerHTML = text;
@@ -75,15 +88,15 @@ class LiveTable {
 
     // TODO: Append empty cell here (header cell in this column is empty, data
     // cells have the edit/delete/checkbox elements).
-    for (var i=0; i<this.data.table[0].length; i++) {
-      var colName = this.createColumnHeader (i, this.data.table[0][i], trhead);
+    for (var i=0; i<this.dataHeaders.length; i++) {
+      var colName = this.createColumnHeader (i, this.dataHeaders[i], trhead);
       trhead.appendChild (colName);
     }
     // TODO: Append empty cell here (header cell in this column is empty, data
     // cells have the edit/delete/checkbox elements).
 
     var ncols = this.data.table[0].length;
-    for (var i=1; i<this.data.table.length; i++) {
+    for (var i=0; i<this.data.table.length; i++) {
       var trClassList = (i % 2) == 1 ? this.trOddClassList : this.trEvenClassList;
       var tr = createAttachedElement ("tr", tbody, trClassList);
       // TODO: Add in the edit/delete/checkbox elements here
@@ -104,6 +117,7 @@ class LiveTable {
         "Page":       this.current_page,
         "PageSize":   this.page_size
       });
+      this.dataHeaders = this.data.table.shift ();
     }
 
     if (this.parentNode) {
