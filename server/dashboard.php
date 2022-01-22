@@ -73,11 +73,13 @@ function genData () {
 }
 
 var userAdminTable = new LiveTable (genData);
-userAdminTable.tableClassList = "test_tableClassList";
-userAdminTable.theadClassList = "test_theadClassList";
-userAdminTable.tbodyClassList = "test_tbodyClassList";
-userAdminTable.trOddClassList = "test_trOddClassList";
-userAdminTable.trEvenClassList = "test_trEvenClassList";
+userAdminTable.tableClassList = "test_tableClass";
+userAdminTable.theadClassList = "test_theadClass";
+userAdminTable.tbodyClassList = "test_tbodyClass";
+userAdminTable.trOddClassList = "test_trOddClass";
+userAdminTable.trEvenClassList = "test_trEvenClass";
+userAdminTable.uneditableRowClassList = "test_uneditableClass";
+userAdminTable.editableRowClassList = "test_editableClass";
 userAdminTable.parentNodeId  = 'Administration';
 userAdminTable.render ();
 

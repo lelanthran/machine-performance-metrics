@@ -57,7 +57,7 @@ body {
 }
 
 /* ******************************************************** */
-.test_tableClassList {
+.test_tableClass {
   background-color:   #ffdddd;
   border-style:       solid;
   border-width:       3px;
@@ -65,7 +65,7 @@ body {
   outline: 1px;
 }
 
-.test_theadClassList {
+.test_theadClass {
   background-color:   #ddffdd;
   border-style:       solid;
   border-width:       3px;
@@ -73,7 +73,7 @@ body {
   outline: 1px;
 }
 
-.test_tbodyClassList {
+.test_tbodyClass {
   background-color:   #ddddff;
   border-style:       solid;
   border-width:       3px;
@@ -81,7 +81,7 @@ body {
   outline: 1px;
 }
 
-.test_trOddClassList {
+.test_trOddClass {
   background-color:   #ffddff;
   border-style:       solid;
   border-width:       3px;
@@ -89,7 +89,7 @@ body {
   outline: 1px;
 }
 
-.test_trEvenClassList {
+.test_trEvenClass {
   background-color:   #ddffff;
   border-style:       solid;
   border-width:       3px;
@@ -97,11 +97,21 @@ body {
   outline: 1px;
 }
 
-.test_tdClassList {
+.test_tdClass {
   background-color:   #ffdddd;
   border-style:       solid;
   border-width:       3px;
   border-color:       #ff5555;
   outline: 1px;
+}
+
+.test_uneditableClass {
+  background-color:   inherit;
+  border-width:       0;
+  border:             none;
+}
+
+.test_editableClass {
+  background-color:   #ffffff;
 }
 

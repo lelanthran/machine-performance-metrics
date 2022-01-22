@@ -3,20 +3,20 @@ function stringCompare (str1, str2) {
   return str1 < str2 ? -1 : str1 > str2;
 }
 
-function disableTableRow (tr) {
+function disableTableRow (tr, classList) {
   for (var i=1; i<tr.childNodes.length; i++) {
     var td = tr.childNodes[i].childNodes[0];
     td.readOnly = true;
-    td.style = "background-color:#d6d6d6;";
+    td.classList = classList;
   };
   tr.disabled = true;
 }
 
-function enableTableRow (tr) {
+function enableTableRow (tr, classList) {
   for (var i=1; i<tr.childNodes.length; i++) {
     var td = tr.childNodes[i].childNodes[0];
     td.readOnly = false;
-    td.style = "background-color:#ffffff;";
+    td.classList = classList;
   };
   tr.disabled = false;
 }
@@ -50,6 +50,8 @@ class LiveTable {
     this.pageCtlClassList = null;
     this.checkboxClassList = null;
     this.inputClassList = null;
+    this.editableRowClassList = null;
+    this.uneditableRowClassList = null;
 
     this.dataFunc = dataFunc;
     this.sortFuncs = new Object ();
@@ -150,15 +152,24 @@ class LiveTable {
           console.log (localTr);
         }
       }
-      disableTableRow (tr);
+      disableTableRow (tr, this.uneditableRowClassList);
+      tr.editableRowClassList = this.editableRowClassList;
+      tr.uneditableRowClassList = this.uneditableRowClassList;
+      tr.onkeydown = function (evt) {
+        if (evt.key === 'Escape') {
+          disableTableRow (this, this.uneditableRowClassList);
+        }
+      }
+
       tr.onclick = function () {
+        var eClass = this.editableRowClassList;
+        var ueClass = this.uneditableRowClassList;
+        console.log (`${eClass} : ${ueClass}`);
         if (this.disabled) {
           tbody.childNodes.forEach ((tr) => {
-            disableTableRow (tr);
+            disableTableRow (tr, ueClass);
           });
-          enableTableRow (this);
-        } else {
-          disableTableRow (this);
+          enableTableRow (this, eClass);
         }
       };
       tbody.appendChild (tr);
