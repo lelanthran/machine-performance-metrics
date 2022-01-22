@@ -70,7 +70,15 @@ function genData () {
   };
 }
 
-var userAdminTable = new LiveTable (genData);
+function updateRow (row) {
+  console.log (`Updating ${row}`);
+}
+
+function deleteRow (row) {
+  console.log (`deleting ${row}`);
+}
+
+var userAdminTable = new LiveTable (genData, updateRow, deleteRow);
 userAdminTable.tableClassList = "test_tableClass";
 userAdminTable.theadClassList = "test_theadClass";
 userAdminTable.tbodyClassList = "test_tbodyClass";
@@ -79,6 +87,7 @@ userAdminTable.trEvenClassList = "test_trEvenClass";
 userAdminTable.uneditableRowClassList = "test_uneditableClass";
 userAdminTable.editableRowClassList = "test_editableClass";
 userAdminTable.sortBtnClassList = "test_sortBtn";
+userAdminTable.changedRowClassList = "test_changedRowClass";
 userAdminTable.parentNodeId  = 'Administration';
 userAdminTable.render ();
 

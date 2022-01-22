@@ -119,3 +119,9 @@ body {
   width: 100%;
 }
 
+.test_changedRowClass {
+  background-color:   #77999977;
+  border-width: 2px;
+  border-color: ff000000;
+}
+

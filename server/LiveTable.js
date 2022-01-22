@@ -48,12 +48,16 @@ class LiveTable {
     this.tdClassList = null;
     this.sortBtnClassList = null;
     this.pageCtlClassList = null;
+    this.pageCtlBtnClassList = null;
     this.checkboxClassList = null;
     this.inputClassList = null;
     this.editableRowClassList = null;
     this.uneditableRowClassList = null;
+    this.changedRowClassList = null;
 
     this.dataFunc = dataFunc;
+    this.recUpdateFunc = recUpdateFunc;
+    this.recRemoveFunc = recRemoveFunc;
     this.sortFuncs = new Object ();
     this.data = null;
     this.dataHeaders = null;
@@ -84,11 +88,60 @@ class LiveTable {
     this.render ();
   }
 
+  saveChanges () {
+    this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
+      if (row.changed) {
+        var values = [];
+        for (var i=1; i<row.childNodes.length; i++) {
+          values.push (row.childNodes[i].firstChild.value);
+        }
+        this.recUpdateFunc (values);
+        row.changed = false;
+      }
+    });
+  }
+
+  removeRecords () {
+    this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
+      if (row.firstChild.checked) {
+        var values = [];
+        for (var i=1; i<row.childNodes.length; i++) {
+          values.push (row.childNodes[i].firstChild.value);
+        }
+        this.recRemoveFunc (values);
+        row.changed = false;
+      }
+    });
+  }
+
   createPageCtl (parentNode) {
-    // TODO: Complete this.
-    var tmp = createAttachedElement ("i", parentNode, this.pageCtlClassList);
-    tmp.innerHTML = "Paging control";
-    return tmp;
+    var div = createAttachedElement ("div", parentNode, this.pageCtlClassList);
+    var btnRefresh = createAttachedElement ("button", div, this.pageCtlBtnClassList);
+    var btnDelete = createAttachedElement ("button", div, this.pageCtlBtnClassList);
+    var btnSaveChanges = createAttachedElement ("button", div, this.pageCtlBtnClassList);
+
+    btnRefresh.innerHTML = "Refresh";
+    btnRefresh.onclick = () => {
+      this.render ();
+    }
+    btnDelete.innerHTML = "Delete";
+    btnDelete.disabled = true;
+    btnDelete.onclick = () => {
+      // TODO: Complete this by calling this.removeRecords
+      console.log ("Removing all checked records");
+    }
+
+    btnSaveChanges.innerHTML = "Save Changes";
+    btnSaveChanges.disabled = true;
+    btnSaveChanges.onclick = () => {
+      var topSaveBtn = parentNode.firstChild.lastChild;
+      var bottomSaveBtn = parentNode.lastChild.lastChild;
+      this.saveChanges ();
+      topSaveBtn.disabled = true;
+      bottomSaveBtn.disabled = true;
+    }
+
+    return div;
   }
 
   createRowCheckbox (parentNode, rowNumber) {
@@ -140,7 +193,10 @@ class LiveTable {
     for (var i=0; i<this.data.table.length; i++) {
       var trClassList = (i % 2) == 1 ? this.trOddClassList : this.trEvenClassList;
       var tr = createAttachedElement ("tr", tbody, trClassList);
+      tr.changed = false;
       this.createRowCheckbox (tr, i);
+      // TODO: Must have onclick() handler that checks all checkboxes and
+      // enables the delete button if any checkbox is checked.
       for (var j=0; j<ncols; j++) {
         var td = createAttachedElement ("td", tr, this.tdClassList);
         var input = createAttachedElement ("input", td, null);
@@ -149,8 +205,12 @@ class LiveTable {
         input.size = input.value.length;
         input.onchange = function () {
           var localTr = this.parentNode.parentNode;
+          var topSaveBtn = localTr.parentNode.parentNode.parentNode.firstChild.lastChild;
+          var bottomSaveBtn = localTr.parentNode.parentNode.parentNode.lastChild.lastChild;
+          topSaveBtn.disabled =  false;
+          bottomSaveBtn.disabled =  false;
           localTr.changed = true;
-          console.log (localTr);
+          localTr.classList.add (localTr.changedRowClassList);
         }
         input.onblur = function () {
           var localTr = this.parentNode.parentNode;
@@ -160,6 +220,7 @@ class LiveTable {
       disableTableRow (tr, this.uneditableRowClassList);
       tr.editableRowClassList = this.editableRowClassList;
       tr.uneditableRowClassList = this.uneditableRowClassList;
+      tr.changedRowClassList = this.changedRowClassList;
       tr.onkeydown = function (evt) {
         if (evt.key === 'Escape') {
           disableTableRow (this, this.uneditableRowClassList);
