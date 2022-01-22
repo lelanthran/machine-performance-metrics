@@ -3,6 +3,24 @@ function stringCompare (str1, str2) {
   return str1 < str2 ? -1 : str1 > str2;
 }
 
+function disableTableRow (tr) {
+  for (var i=1; i<tr.childNodes.length; i++) {
+    var td = tr.childNodes[i].childNodes[0];
+    td.readOnly = true;
+    td.style = "background-color:#d6d6d6;";
+  };
+  tr.disabled = true;
+}
+
+function enableTableRow (tr) {
+  for (var i=1; i<tr.childNodes.length; i++) {
+    var td = tr.childNodes[i].childNodes[0];
+    td.readOnly = false;
+    td.style = "background-color:#ffffff;";
+  };
+  tr.disabled = false;
+}
+
 function createAttachedElement (elType, parentNode, classList) {
   var element = document.createElement (elType);
   if (classList != null) {
@@ -29,6 +47,9 @@ class LiveTable {
     this.thClassList = null;
     this.tdClassList = null;
     this.sortBtnClassList = null;
+    this.pageCtlClassList = null;
+    this.checkboxClassList = null;
+    this.inputClassList = null;
 
     this.dataFunc = dataFunc;
     this.sortFuncs = new Object ();
@@ -61,8 +82,29 @@ class LiveTable {
     this.render ();
   }
 
-  createColumnHeader (colNumber, text, parentNode) {
+  createPageCtl (parentNode) {
+    // TODO: Complete this.
+    var tmp = createAttachedElement ("i", parentNode, this.pageCtlClassList);
+    tmp.innerHTML = "Paging control";
+    return tmp;
+  }
 
+  createRowCheckbox (parentNode, rowNumber) {
+    var tmp = createAttachedElement ("input", parentNode, this.checkboxClassList);
+    tmp.type = "checkbox";
+    tmp.rowNumber = rowNumber;
+    if (rowNumber < 0) {
+      tmp.onclick = () => {
+        var checkedValue = tmp.checked;
+        this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
+          row.firstChild.checked = checkedValue;
+        });
+      }
+    }
+    return tmp;
+  }
+
+  createColumnHeader (colNumber, text, parentNode) {
     var element = createAttachedElement ("td", parentNode, "");
     var btn = createAttachedElement ("button", element, this.sortBtnClassList);
     if (this.columnsSortDirections[colNumber] == undefined) {
@@ -79,43 +121,57 @@ class LiveTable {
 
   createTableElement () {
     var div = createAttachedElement ("div", null, this.divClassList);
-    var element = createAttachedElement ("table", null, this.tableClassList);
+    var topPageCtl = this.createPageCtl (div);
+    var element = createAttachedElement ("table", div, this.tableClassList);
     var thead = createAttachedElement ("thead", element, this.theadClassList);
     var trhead = createAttachedElement ("tr", thead, "");
     var tbody = createAttachedElement ("tbody", element, this.tbodyClassList);
 
-    // TODO: Append table paging controls here: div.appendChild (tblctl);
-
-    // TODO: Append empty cell here (header cell in this column is empty, data
-    // cells have the edit/delete/checkbox elements).
+    this.createRowCheckbox (trhead, -1);
     for (var i=0; i<this.dataHeaders.length; i++) {
       var colName = this.createColumnHeader (i, this.dataHeaders[i], trhead);
       trhead.appendChild (colName);
     }
-    // TODO: Append empty cell here (header cell in this column is empty, data
-    // cells have the edit/delete/checkbox elements).
+    createAttachedElement ("td", trhead, null);
 
     var ncols = this.data.table[0].length;
     for (var i=0; i<this.data.table.length; i++) {
       var trClassList = (i % 2) == 1 ? this.trOddClassList : this.trEvenClassList;
       var tr = createAttachedElement ("tr", tbody, trClassList);
-      // TODO: Add in the edit/delete/checkbox elements here
+      this.createRowCheckbox (tr, i);
       for (var j=0; j<ncols; j++) {
         var td = createAttachedElement ("td", tr, this.tdClassList);
-        td.innerHTML = this.data.table[i][j];
+        var input = createAttachedElement ("input", td, null);
+        input.value = this.data.table[i][j];
+        input.classList = this.inputClassList;
+        input.onchange = function () {
+          var localTr = this.parentNode.parentNode;
+          localTr.changed = true;
+          console.log (localTr);
+        }
       }
-      // TODO: Add in the edit/delete/checkbox elements here
+      disableTableRow (tr);
+      tr.onclick = function () {
+        if (this.disabled) {
+          tbody.childNodes.forEach ((tr) => {
+            disableTableRow (tr);
+          });
+          enableTableRow (this);
+        } else {
+          disableTableRow (this);
+        }
+      };
       tbody.appendChild (tr);
     }
-    // TODO: Append table paging controls here: div.appendChild (tblctl);
-    return element;
+    var bottomPageCtl = this.createPageCtl (div);
+    return div;
   }
 
   render () {
     if (this.data == null) {
       this.data = this.dataFunc ({
-        "Page":       this.current_page,
-        "PageSize":   this.page_size
+        "Page":       this.currentPage,
+        "PageSize":   this.pageSize
       });
       this.dataHeaders = this.data.table.shift ();
     }

@@ -66,7 +66,9 @@ function genData () {
              ["n", "E", 5.3],
              ["d", "F", 6.3],
              ["o", "G", 7.3],
-           ]
+  ],
+  "Page":     0,
+  "PageSize": 3
   };
 }
 
