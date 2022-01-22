@@ -146,10 +146,15 @@ class LiveTable {
         var input = createAttachedElement ("input", td, null);
         input.value = this.data.table[i][j];
         input.classList = this.inputClassList;
+        input.size = input.value.length;
         input.onchange = function () {
           var localTr = this.parentNode.parentNode;
           localTr.changed = true;
           console.log (localTr);
+        }
+        input.onblur = function () {
+          var localTr = this.parentNode.parentNode;
+          disableTableRow (localTr, localTr.uneditableRowClassList);
         }
       }
       disableTableRow (tr, this.uneditableRowClassList);
@@ -158,6 +163,10 @@ class LiveTable {
       tr.onkeydown = function (evt) {
         if (evt.key === 'Escape') {
           disableTableRow (this, this.uneditableRowClassList);
+        }
+        for (var i=1; i<this.childNodes.length; i++) {
+          var input = this.childNodes[i].childNodes[0];
+          input.size = input.value.length;
         }
       }
 

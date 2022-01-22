@@ -66,9 +66,7 @@ function genData () {
              ["n", "E", 5.3],
              ["d", "F", 6.3],
              ["o", "G", 7.3],
-  ],
-  "Page":     0,
-  "PageSize": 3
+           ],
   };
 }
 
@@ -80,6 +78,7 @@ userAdminTable.trOddClassList = "test_trOddClass";
 userAdminTable.trEvenClassList = "test_trEvenClass";
 userAdminTable.uneditableRowClassList = "test_uneditableClass";
 userAdminTable.editableRowClassList = "test_editableClass";
+userAdminTable.sortBtnClassList = "test_sortBtn";
 userAdminTable.parentNodeId  = 'Administration';
 userAdminTable.render ();
 
