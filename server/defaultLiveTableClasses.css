@@ -2,9 +2,10 @@
 /* ******************************************************** */
 .default_tableClass {
   border-style:       solid;
-  border-width:       1px;
-  border-color:       #ff5555;
-  outline: 1px;
+  border-width:       0px;
+  border-color:       #c0d4fE;
+  outline: 0px;
+  padding: 10px;
 }
 
 .default_theadClass {
@@ -24,7 +25,7 @@
 }
 
 .default_trOddClass {
-  background-color:   #ffddff;
+  background-color:   #F0F8FF;
   border-style:       solid;
   border-width:       3px;
   border-color:       #ff55ff;
@@ -32,7 +33,7 @@
 }
 
 .default_trEvenClass {
-  background-color:   #ddffff;
+  background-color:   #c0d4fE;
   border-style:       solid;
   border-width:       3px;
   border-color:       #55ffff;
@@ -57,12 +58,63 @@
   background-color:   #ffffff;
 }
 
-.default_sortBtn {
+.default_sortBtnClass {
+  background-color: #0d0d77;
+  border-style: solid;
+  border-color: #cdcdff;
+  border-width: 1px;
+  color: #cdcdff;
+  text-align: center;
+  font-size: 16px;
   width: 100%;
 }
 
+.default_pageCtlRefreshBtnClass {
+  background-color: #0d0d77;
+  border-style: solid;
+  border-color: #cdcdff;
+  border-width: 1px;
+  color: #cdcdff;
+  text-align: center;
+  font-size: 16px;
+  margin-right: 30px;
+}
+
+.default_pageCtlSaveBtnClass {
+  background-color: #0d770d;
+  border-style: solid;
+  border-color: #cdcdff;
+  border-width: 1px;
+  color: #cdcdff;
+  text-align: center;
+  font-size: 16px;
+  margin-right: 30px;
+}
+
+.default_pageCtlDeleteBtnClass {
+  background-color: #770d0d;
+  border-style: solid;
+  border-color: #cdcdff;
+  border-width: 1px;
+  color: #cdcdff;
+  text-align: center;
+  font-size: 16px;
+  margin-right: 30px;
+}
+
+.default_pageCtlDisabledBtnClass {
+  background-color: #dedede;
+  border-style: solid;
+  border-color: #cdcdff;
+  border-width: 1px;
+  color: #777777;
+  text-align: center;
+  font-size: 16px;
+  margin-right: 30px;
+}
+
 .default_changedRowClass {
-  background-color:   #77999977;
+  background-color:   #ff000044;
   border-width: 2px;
   border-color: ff000000;
 }
