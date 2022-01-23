@@ -108,8 +108,8 @@ class LiveTable {
         for (var i=1; i<row.childNodes.length; i++) {
           values.push (row.childNodes[i].firstChild.value);
         }
-        if (this.recUpdateFunc (values)==true)
-          row.changed = false;
+        this.recUpdateFunc (values);
+        row.changed = false;
       }
       row.classList.remove (this.changedRowClassList);
     });

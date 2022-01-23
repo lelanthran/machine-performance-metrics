@@ -73,6 +73,7 @@ function genData () {
 
 function updateRow (row) {
   console.log (`Updating ${row}`);
+  return false;
 }
 
 function deleteRow (row) {
