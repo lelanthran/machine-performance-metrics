@@ -14,6 +14,7 @@ if (strlen ($g_sess_user_name) <= 2) {
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="mpm.css">
+  <link rel="stylesheet" href="defaultLiveTableClasses.css">
   <script type="text/javascript" src="mpm.js"></script>
   <script type="text/javascript" src="LiveTable.js"></script>
 </head>
@@ -79,15 +80,15 @@ function deleteRow (row) {
 }
 
 var userAdminTable = new LiveTable (genData, updateRow, deleteRow);
-userAdminTable.tableClassList = "test_tableClass";
-userAdminTable.theadClassList = "test_theadClass";
-userAdminTable.tbodyClassList = "test_tbodyClass";
-userAdminTable.trOddClassList = "test_trOddClass";
-userAdminTable.trEvenClassList = "test_trEvenClass";
-userAdminTable.uneditableRowClassList = "test_uneditableClass";
-userAdminTable.editableRowClassList = "test_editableClass";
-userAdminTable.sortBtnClassList = "test_sortBtn";
-userAdminTable.changedRowClassList = "test_changedRowClass";
+userAdminTable.tableClassList = "default_tableClass";
+userAdminTable.theadClassList = "default_theadClass";
+userAdminTable.tbodyClassList = "default_tbodyClass";
+userAdminTable.trOddClassList = "default_trOddClass";
+userAdminTable.trEvenClassList = "default_trEvenClass";
+userAdminTable.uneditableRowClassList = "default_uneditableRowClass";
+userAdminTable.editableRowClassList = "default_editableRowClass";
+userAdminTable.sortBtnClassList = "default_sortBtn";
+userAdminTable.changedRowClassList = "default_changedRowClass";
 userAdminTable.parentNodeId  = 'Administration';
 userAdminTable.render ();
 

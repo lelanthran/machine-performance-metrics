@@ -1,4 +1,15 @@
 
+/* *************************************************************
+ * TODO:
+ * 1. Refactor all the `this.element.childNodes[i].firstChild` etc
+ *    into `getRefreshButtons()`, `getDeleteButtons()` etc. Maybe
+ *    best to simply store them in an array of two elements when
+ *    they are created.
+ *
+ * 2. Add in paging controls - firstPage, prevPage, nextPage and
+ *    lastPage.
+ *
+ */
 function stringCompare (str1, str2) {
   return str1 < str2 ? -1 : str1 > str2;
 }
@@ -38,22 +49,22 @@ class LiveTable {
     this.parentNode = null;
     this.element = null;
 
-    this.divClassList = null;
-    this.tableClassList = null;
-    this.theadClassList = null;
-    this.tbodyClassList = null;
-    this.trEvenClassList = null;
-    this.trOddClassList = null;
-    this.thClassList = null;
-    this.tdClassList = null;
-    this.sortBtnClassList = null;
-    this.pageCtlClassList = null;
-    this.pageCtlBtnClassList = null;
-    this.checkboxClassList = null;
-    this.inputClassList = null;
-    this.editableRowClassList = null;
-    this.uneditableRowClassList = null;
-    this.changedRowClassList = null;
+    this.divClassList = 'default_divClass';
+    this.tableClassList = 'default_tableClass';
+    this.theadClassList = 'default_threadClass';
+    this.tbodyClassList = 'default_tbodyClass';
+    this.trEvenClassList = 'default_trEvenClass';
+    this.trOddClassList = 'default_trOddClass';
+    this.thClassList = 'default_thClass';
+    this.tdClassList = 'default_tdClass';
+    this.sortBtnClassList = 'default_sortBtnClass';
+    this.pageCtlClassList = 'default_pageCtlClass';
+    this.pageCtlBtnClassList = 'default_pageCtlBtnClass';
+    this.checkboxClassList = 'default_checkboxClass';
+    this.inputClassList = 'default_inputClass';
+    this.editableRowClassList = 'default_editableRowClass';
+    this.uneditableRowClassList = 'default_uneditableRowClass';
+    this.changedRowClassList = 'default_changedRowClass';
 
     this.dataFunc = dataFunc;
     this.recUpdateFunc = recUpdateFunc;
@@ -100,6 +111,7 @@ class LiveTable {
         this.recUpdateFunc (values);
         row.changed = false;
       }
+      row.classList.remove (this.changedRowClassList);
     });
   }
 
