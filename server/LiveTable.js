@@ -62,6 +62,8 @@ class LiveTable {
     this.data = null;
     this.dataHeaders = null;
     this.columnsSortDirections = [];
+
+    this.nchecks = 0;
   }
 
   setSortFunc (colNumber, func) {
@@ -145,18 +147,32 @@ class LiveTable {
   }
 
   createRowCheckbox (parentNode, rowNumber) {
-    var tmp = createAttachedElement ("input", parentNode, this.checkboxClassList);
-    tmp.type = "checkbox";
-    tmp.rowNumber = rowNumber;
+    var cb = createAttachedElement ("input", parentNode, this.checkboxClassList);
+    cb.type = "checkbox";
+    cb.rowNumber = rowNumber;
     if (rowNumber < 0) {
-      tmp.onclick = () => {
-        var checkedValue = tmp.checked;
+      cb.onclick = () => {
+        var checkedValue = cb.checked;
         this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
           row.firstChild.checked = checkedValue;
         });
       }
+    } else {
+      cb.onclick = () => {
+        if (cb.checked == true) {
+          this.nchecks++;
+        } else {
+          this.nchecks--;
+        }
+        var deleteBtn = this.element.childNodes[0].childNodes[1];
+        if (this.nchecks > 0) {
+          deleteBtn.disabled = false;
+        } else {
+          deleteBtn.disabled = true;
+        }
+      }
     }
-    return tmp;
+    return cb;
   }
 
   createColumnHeader (colNumber, text, parentNode) {
