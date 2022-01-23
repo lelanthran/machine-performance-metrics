@@ -103,6 +103,19 @@ class LiveTable {
     });
   }
 
+  removeCheckedRecords () {
+    this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
+      if (row.firstChild.checked) {
+        var values = [];
+        for (var i=1; i<row.childNodes.length; i++) {
+          values.push (row.childNodes[i].firstChild.value);
+        }
+        this.recRemoveFunc (values);
+        row.changed = false;
+      }
+    });
+  }
+
   removeRecords () {
     this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
       if (row.firstChild.checked) {
@@ -129,8 +142,12 @@ class LiveTable {
     btnDelete.innerHTML = "Delete";
     btnDelete.disabled = true;
     btnDelete.onclick = () => {
-      // TODO: Complete this by calling this.removeRecords
-      console.log ("Removing all checked records");
+      var topDeleteBtn = this.element.firstChild.childNodes[1];
+      var bottomDeleteBtn = this.element.lastChild.childNodes[1];
+      topDeleteBtn.disabled = false;
+      bottomDeleteBtn.disabled = false;
+      this.removeCheckedRecords ();
+      this.render ();
     }
 
     btnSaveChanges.innerHTML = "Save Changes";
@@ -164,11 +181,14 @@ class LiveTable {
         } else {
           this.nchecks--;
         }
-        var deleteBtn = this.element.childNodes[0].childNodes[1];
+        var topDeleteBtn = this.element.firstChild.childNodes[1];
+        var bottomDeleteBtn = this.element.lastChild.childNodes[1];
         if (this.nchecks > 0) {
-          deleteBtn.disabled = false;
+          topDeleteBtn.disabled = false;
+          bottomDeleteBtn.disabled = false;
         } else {
-          deleteBtn.disabled = true;
+          topDeleteBtn.disabled = true;
+          bottomDeleteBtn.disabled = false;
         }
       }
     }
@@ -211,8 +231,6 @@ class LiveTable {
       var tr = createAttachedElement ("tr", tbody, trClassList);
       tr.changed = false;
       this.createRowCheckbox (tr, i);
-      // TODO: Must have onclick() handler that checks all checkboxes and
-      // enables the delete button if any checkbox is checked.
       for (var j=0; j<ncols; j++) {
         var td = createAttachedElement ("td", tr, this.tdClassList);
         var input = createAttachedElement ("input", td, null);
