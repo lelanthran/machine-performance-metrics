@@ -22,7 +22,21 @@ if (strlen ($g_sess_user_name) <= 2) {
 
   <h3>MPM Dashboard</h3>
 
+  <div id="busyMessage" class="overlay">
+
+    <!-- Button to close the overlay navigation -->
+    <a href="javascript:void(0)" class="closebtn" onclick="updateBusyMessage('Still busy')">Update busy message</a>
+    <a href="javascript:void(0)" class="closebtn" onclick="endBusyMessage()">End busy message</a>
+
+    <!-- Overlay content -->
+    <div class="overlay-content">
+      <p id=busyMessageContent > </p>
+      <p id=busyMessageContentDots > </p>
+    </div>
+
+  </div>
   <div class="tab">
+  <button onclick='startBusyMessage ("Busy")'> start busy message</button>
 <?php
 $tabcfg = [
   array (0, 'Administration', 'Administration', ''),
@@ -59,8 +73,7 @@ foreach ($tabcfg as $tab) {
 
 <script>
 
-// TODO: replace genData with getUserList()
-function genData () {
+function getUserList () {
   return {
   "table": [ ["a", "A", 1.3],
              ["b", "B", 2.3],
@@ -73,18 +86,16 @@ function genData () {
   };
 }
 
-// TODO: replace updateRow() with updateUserRecord()
-function updateRow (row) {
+function updateUserRecord (row) {
   console.log (`Updating ${row}`);
   return false;
 }
 
-// TODO: replace deleteRow() with deleteUserRecord()
-function deleteRow (row) {
+function deleteUserRecord (row) {
   console.log (`deleting ${row}`);
 }
 
-var userAdminTable = new LiveTable (genData, updateRow, deleteRow);
+var userAdminTable = new LiveTable (getUserList, updateUserRecord, deleteUserRecord);
 
 // userAdminTable.tableClassList = "default_tableClass";
 // userAdminTable.theadClassList = "default_theadClass";

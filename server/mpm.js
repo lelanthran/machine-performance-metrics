@@ -13,3 +13,20 @@ function openTab(evt, tabName) {
   evt.currentTarget.className += " active";
 }
 
+function startBusyMessage (message) {
+   console.log (message);
+   document.documentElement.style.cursor = "wait";
+   document.getElementById("busyMessage").style.height = "100%";
+   document.getElementById("busyMessageContent").innerHTML= message;
+}
+
+function updateBusyMessage (message) {
+   console.log (message);
+   document.getElementById("busyMessageContent").innerHTML= message;
+}
+
+function endBusyMessage () {
+   console.log ("end busyMessage");
+   document.getElementById("busyMessage").style.height = "0";
+   document.documentElement.style.cursor = "auto";
+}

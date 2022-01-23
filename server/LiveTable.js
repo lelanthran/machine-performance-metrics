@@ -133,6 +133,11 @@ class LiveTable {
   }
 
   removeCheckedRecords () {
+    if (this.getSaveButtons()[0].disabled == false) {
+      alert ("Cannot delete any records until all changes are saved or discarded");
+      return;
+    }
+
     this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
       if (row.firstChild.checked) {
         var values = [];
