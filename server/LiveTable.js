@@ -59,7 +59,10 @@ class LiveTable {
     this.tdClassList = 'default_tdClass';
     this.sortBtnClassList = 'default_sortBtnClass';
     this.pageCtlClassList = 'default_pageCtlClass';
-    this.pageCtlBtnClassList = 'default_pageCtlBtnClass';
+    this.pageCtlRefreshBtnClassList = 'default_pageCtlRefreshBtnClass';
+    this.pageCtlSaveBtnClassList = 'default_pageCtlSaveBtnClass';
+    this.pageCtlDeleteBtnClassList = 'default_pageCtlDeleteBtnClass';
+    this.pageCtlDisabledBtnClassList = 'default_pageCtlDisabledBtnClass';
     this.checkboxClassList = 'default_checkboxClass';
     this.inputClassList = 'default_inputClass';
     this.editableRowClassList = 'default_editableRowClass';
@@ -75,6 +78,20 @@ class LiveTable {
     this.columnsSortDirections = [];
 
     this.nchecks = 0;
+  }
+
+  getSaveButtons () {
+    var btns = [];
+    btns.push (this.element.firstChild.childNodes[1]);
+    btns.push (this.element.lastChild.childNodes[1]);
+    return btns;
+  }
+
+  getDeleteButtons () {
+    var btns = [];
+    btns.push (this.element.firstChild.lastChild);
+    btns.push (this.element.lastChild.lastChild);
+    return btns;
   }
 
   setSortFunc (colNumber, func) {
@@ -130,32 +147,36 @@ class LiveTable {
 
   createPageCtl (parentNode) {
     var div = createAttachedElement ("div", parentNode, this.pageCtlClassList);
-    var btnRefresh = createAttachedElement ("button", div, this.pageCtlBtnClassList);
-    var btnDelete = createAttachedElement ("button", div, this.pageCtlBtnClassList);
-    var btnSaveChanges = createAttachedElement ("button", div, this.pageCtlBtnClassList);
+    var btnRefresh = createAttachedElement ("button", div, this.pageCtlRefreshBtnClassList);
+    var btnSaveChanges = createAttachedElement ("button", div, this.pageCtlDisabledBtnClassList);
+    var spacer = createAttachedElement ("span", div, null);
+    var btnDelete = createAttachedElement ("button", div, this.pageCtlDisabledBtnClassList);
 
     btnRefresh.innerHTML = "Refresh";
     btnRefresh.onclick = () => {
       this.render ();
     }
-    btnDelete.innerHTML = "Delete";
-    btnDelete.disabled = true;
-    btnDelete.onclick = () => {
-      var topDeleteBtn = this.element.firstChild.childNodes[1];
-      var bottomDeleteBtn = this.element.lastChild.childNodes[1];
-      topDeleteBtn.disabled = false;
-      bottomDeleteBtn.disabled = false;
-      this.removeCheckedRecords ();
-    }
 
     btnSaveChanges.innerHTML = "Save Changes";
     btnSaveChanges.disabled = true;
     btnSaveChanges.onclick = () => {
-      var topSaveBtn = parentNode.firstChild.lastChild;
-      var bottomSaveBtn = parentNode.lastChild.lastChild;
+      var topSaveBtn = this.getSaveButtons()[0];
+      var bottomSaveBtn = this.getSaveButtons()[1];
       this.saveChanges ();
       topSaveBtn.disabled = true;
+      topSaveBtn.classList = this.pageCtlDisabledBtnClassList;
       bottomSaveBtn.disabled = true;
+      bottomSaveBtn.classList = this.pageCtlDisabledBtnClassList;
+    }
+
+    btnDelete.innerHTML = "Delete";
+    btnDelete.disabled = true;
+    btnDelete.onclick = () => {
+      var topDeleteBtn = this.getDeleteButtons()[0];
+      var bottomDeleteBtn = this.getDeleteButtons()[1];
+      topDeleteBtn.disabled = false;
+      bottomDeleteBtn.disabled = false;
+      this.removeCheckedRecords ();
     }
 
     return div;
@@ -171,15 +192,19 @@ class LiveTable {
         this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
           row.firstChild.checked = checkedValue;
         });
-        var topDeleteBtn = this.element.firstChild.childNodes[1];
-        var bottomDeleteBtn = this.element.lastChild.childNodes[1];
+        var topDeleteBtn = this.getDeleteButtons()[0];
+        var bottomDeleteBtn = this.getDeleteButtons()[1];
         if (checkedValue) {
           topDeleteBtn.disabled = false;
           bottomDeleteBtn.disabled = false;
+          topDeleteBtn.classList = this.pageCtlDeleteBtnClassList;
+          bottomDeleteBtn.classList = this.pageCtlDeleteBtnClassList;
           this.nchecks = this.element.childNodes[1].childNodes[1].childNodes.length;
         } else {
           topDeleteBtn.disabled = true;
           bottomDeleteBtn.disabled = true;
+          topDeleteBtn.classList = this.pageCtlDisabledBtnClassList;
+          bottomDeleteBtn.classList = this.pageCtlDisabledBtnClassList;
           this.nchecks = 0;
         }
       }
@@ -190,14 +215,18 @@ class LiveTable {
         } else {
           this.nchecks--;
         }
-        var topDeleteBtn = this.element.firstChild.childNodes[1];
-        var bottomDeleteBtn = this.element.lastChild.childNodes[1];
+        var topDeleteBtn = this.getDeleteButtons()[0];
+        var bottomDeleteBtn = this.getDeleteButtons()[1];
         if (this.nchecks > 0) {
           topDeleteBtn.disabled = false;
           bottomDeleteBtn.disabled = false;
+          topDeleteBtn.classList = this.pageCtlDeleteBtnClassList;
+          bottomDeleteBtn.classList = this.pageCtlDeleteBtnClassList;
         } else {
           topDeleteBtn.disabled = true;
           bottomDeleteBtn.disabled = false;
+          topDeleteBtn.classList = this.pageCtlDisabledBtnClassList;
+          bottomDeleteBtn.classList = this.pageCtlDisabledBtnClassList;
         }
       }
     }
@@ -248,10 +277,12 @@ class LiveTable {
         input.size = input.value.length;
         input.onchange = function () {
           var localTr = this.parentNode.parentNode;
-          var topSaveBtn = localTr.parentNode.parentNode.parentNode.firstChild.lastChild;
-          var bottomSaveBtn = localTr.parentNode.parentNode.parentNode.lastChild.lastChild;
+          var topSaveBtn = localTr.parentNode.parentNode.parentNode.firstChild.childNodes[1];
+          var bottomSaveBtn = localTr.parentNode.parentNode.parentNode.lastChild.childNodes[1];
           topSaveBtn.disabled =  false;
           bottomSaveBtn.disabled =  false;
+          topSaveBtn.classList = localTr.obj.pageCtlSaveBtnClassList;
+          bottomSaveBtn.classList = localTr.obj.pageCtlSaveBtnClassList;
           localTr.changed = true;
           localTr.classList.add (localTr.changedRowClassList);
         }
@@ -264,6 +295,7 @@ class LiveTable {
       tr.editableRowClassList = this.editableRowClassList;
       tr.uneditableRowClassList = this.uneditableRowClassList;
       tr.changedRowClassList = this.changedRowClassList;
+      tr.obj = this;
       tr.onkeydown = function (evt) {
         if (evt.key === 'Escape') {
           disableTableRow (this, this.uneditableRowClassList);
