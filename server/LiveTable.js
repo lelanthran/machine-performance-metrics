@@ -171,6 +171,17 @@ class LiveTable {
         this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
           row.firstChild.checked = checkedValue;
         });
+        var topDeleteBtn = this.element.firstChild.childNodes[1];
+        var bottomDeleteBtn = this.element.lastChild.childNodes[1];
+        if (checkedValue) {
+          topDeleteBtn.disabled = false;
+          bottomDeleteBtn.disabled = false;
+          this.nchecks = this.element.childNodes[1].childNodes[1].childNodes.length;
+        } else {
+          topDeleteBtn.disabled = true;
+          bottomDeleteBtn.disabled = true;
+          this.nchecks = 0;
+        }
       }
     } else {
       cb.onclick = () => {
@@ -266,7 +277,6 @@ class LiveTable {
       tr.onclick = function () {
         var eClass = this.editableRowClassList;
         var ueClass = this.uneditableRowClassList;
-        console.log (`${eClass} : ${ueClass}`);
         if (this.disabled) {
           tbody.childNodes.forEach ((tr) => {
             disableTableRow (tr, ueClass);

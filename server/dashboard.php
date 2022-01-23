@@ -58,6 +58,8 @@ foreach ($tabcfg as $tab) {
   </div>
 
 <script>
+
+// TODO: replace genData with getUserList()
 function genData () {
   return {
   "table": [ ["a", "A", 1.3],
@@ -71,25 +73,29 @@ function genData () {
   };
 }
 
+// TODO: replace updateRow() with updateUserRecord()
 function updateRow (row) {
   console.log (`Updating ${row}`);
   return false;
 }
 
+// TODO: replace deleteRow() with deleteUserRecord()
 function deleteRow (row) {
   console.log (`deleting ${row}`);
 }
 
 var userAdminTable = new LiveTable (genData, updateRow, deleteRow);
-userAdminTable.tableClassList = "default_tableClass";
-userAdminTable.theadClassList = "default_theadClass";
-userAdminTable.tbodyClassList = "default_tbodyClass";
-userAdminTable.trOddClassList = "default_trOddClass";
-userAdminTable.trEvenClassList = "default_trEvenClass";
-userAdminTable.uneditableRowClassList = "default_uneditableRowClass";
-userAdminTable.editableRowClassList = "default_editableRowClass";
-userAdminTable.sortBtnClassList = "default_sortBtn";
-userAdminTable.changedRowClassList = "default_changedRowClass";
+
+// userAdminTable.tableClassList = "default_tableClass";
+// userAdminTable.theadClassList = "default_theadClass";
+// userAdminTable.tbodyClassList = "default_tbodyClass";
+// userAdminTable.trOddClassList = "default_trOddClass";
+// userAdminTable.trEvenClassList = "default_trEvenClass";
+// userAdminTable.uneditableRowClassList = "default_uneditableRowClass";
+// userAdminTable.editableRowClassList = "default_editableRowClass";
+// userAdminTable.sortBtnClassList = "default_sortBtn";
+// userAdminTable.changedRowClassList = "default_changedRowClass";
+
 userAdminTable.parentNodeId  = 'Administration';
 userAdminTable.render ();
 
