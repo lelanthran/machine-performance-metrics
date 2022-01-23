@@ -108,8 +108,8 @@ class LiveTable {
         for (var i=1; i<row.childNodes.length; i++) {
           values.push (row.childNodes[i].firstChild.value);
         }
-        this.recUpdateFunc (values);
-        row.changed = false;
+        if (this.recUpdateFunc (values)==true)
+          row.changed = false;
       }
       row.classList.remove (this.changedRowClassList);
     });
@@ -123,22 +123,9 @@ class LiveTable {
           values.push (row.childNodes[i].firstChild.value);
         }
         this.recRemoveFunc (values);
-        row.changed = false;
       }
     });
-  }
-
-  removeRecords () {
-    this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
-      if (row.firstChild.checked) {
-        var values = [];
-        for (var i=1; i<row.childNodes.length; i++) {
-          values.push (row.childNodes[i].firstChild.value);
-        }
-        this.recRemoveFunc (values);
-        row.changed = false;
-      }
-    });
+    this.render ();
   }
 
   createPageCtl (parentNode) {
@@ -159,7 +146,6 @@ class LiveTable {
       topDeleteBtn.disabled = false;
       bottomDeleteBtn.disabled = false;
       this.removeCheckedRecords ();
-      this.render ();
     }
 
     btnSaveChanges.innerHTML = "Save Changes";
