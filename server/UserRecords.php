@@ -13,6 +13,7 @@ class UserRecords {
    const USERTYPE_STANDARD =  2;
 
    private $internal_allusers = null;
+   private $internal_maxid = 0;
 
    private function internal_user_loaddb () :void {
       $fcontents = file_get_contents ("userdb.ser");
@@ -20,6 +21,11 @@ class UserRecords {
          $this->internal_allusers = null;
       } else {
          $this->internal_allusers = unserialize ($fcontents);
+         foreach ($this->internal_allusers as $rec) {
+            if ($rec[0] > $this->internal_maxid)
+               $this->internal_maxid = $rec[0];
+            $this->internal_maxid++;
+         }
       }
    }
 
@@ -38,16 +44,28 @@ class UserRecords {
       $this->internal_user_loaddb ();
       if ($this->internal_allusers == null) {
          $this->internal_allusers = array ();
+         $this->internal_maxid = 0;
          $this->user_add ('admin', '12345', UserRecords::USERTYPE_ADMIN);
          $this->internal_user_savedb ();
       }
+   }
+
+   function user_list () :array {
+      $ret = array ();
+      array_push ($ret, ['ID', 'User', 'Expiry', 'UserType']);
+      foreach ($this->internal_allusers as $rec) {
+         // id, username, session, expiry, salt, pwhash, user_type
+         $record = array ($rec[0], $rec[1], $rec[3], util_userTypeString ($rec[6]));
+         array_push ($ret, $record);
+      }
+      return ($ret);
    }
 
    /* TODO: This must use SQL wildcards */
    function user_match (string $search_expr) :array {
       $retval = array ();
       foreach ($this->internal_allusers as $rec) {
-         if (strstr ($rec[0], "$username")!==false) {
+         if (strstr ($rec[1], "$username")!==false) {
             array_push ($retval);
          }
       }
@@ -56,52 +74,67 @@ class UserRecords {
 
    function user_find (string $username) :array {
       foreach ($this->internal_allusers as $rec) {
-         if (strcmp ($rec[0], "$username")===0) {
+         if (strcmp ($rec[1], "$username")===0) {
             return $rec;
          }
       }
-      return array ('', '', 0, '', '', PHP_INT_MAX);
+      return array (-1, '', '', 0, '', '', PHP_INT_MAX);
    }
 
    function session_find (string $sess_id) :array {
       $now = time ();
       foreach ($this->internal_allusers as $rec) {
-         if (strcmp ($rec[1], $sess_id)===0 && $now < $rec[2]) {
-            return $rec;
+         if (strcmp ($rec[2], $sess_id)===0 && $now < $rec[3]) {
+            $expiry = time () + (60 * 60 * 5);
+            if (($this->user_mod ($rec[1], $rec[2], $expiry,
+                                  $rec[4], $rec[5], $rec[6]))===true) {
+               return $rec;
+            } else {
+               error_log ("Failed to update the expiry field in user session");
+            }
          }
       }
-      return array ('', '', 0, '', '', PHP_INT_MAX);
+      error_log ("Failed to find session for [$sess_id]");
+      return array (-1, '', '', 0, '', '', PHP_INT_MAX);
    }
 
-   function user_del (string $username) :void {
+   function user_del (string $username) :bool {
       $i = 0;
       for ($i=0; $i<count ($this->internal_allusers); $i++) {
-         if ((strcmp ($this->internal_allusers[$i][0], $username))===0) {
+         if ((strcmp ($this->internal_allusers[$i][1], $username))===0) {
             unset ($this->internal_allusers[$i]);
             $this->internal_allusers = array_values ($this->internal_allusers);
-            break;
+            return $this->internal_user_savedb ();
          }
       }
+      return false;
    }
 
-   function user_add (string $username, string $passwd, int $user_type) :void {
+   function user_add (string $username, string $passwd, int $user_type) :bool {
+      $existing = $this->user_find ($username);
+      if (strlen ($existing[1]) > 1) {
+         return false;
+      }
       $salt = util_randstring (32);
       $record = array (
-         // username, session, expiry, salt, pwhash, user_type
-         $username, '', 0, $salt, UserRecords::pwhash ($username, $salt, $passwd), $user_type
+         // id, username, session, expiry, salt, pwhash, user_type
+         $this->internal_maxid++, $username, '', 0, $salt,
+         UserRecords::pwhash ($username, $salt, $passwd), $user_type
       );
       array_push ($this->internal_allusers, $record);
+      $this->internal_user_savedb ();
+      return true;
    }
 
    function user_mod (string $username, string $session, int $expiry,
                       string $salt, string $pwhash, int $user_type) :bool {
       $record = $this->user_find ($username);
       if ($record != null) {
-         $record[1] = $session;
-         $record[2] = $expiry;
-         $record[3] = $salt;
-         $record[4] = $pwhash;
-         $record[5] = $user_type;
+         $record[2] = $session;
+         $record[3] = $expiry;
+         $record[4] = $salt;
+         $record[5] = $pwhash;
+         $record[6] = $user_type;
          $this->user_del ($username);
          array_push ($this->internal_allusers, $record);
          $this->internal_user_savedb ();
@@ -116,13 +149,13 @@ class UserRecords {
       if ($record == null)
          return '';
 
-      $provided_hash = UserRecords::pwhash ($username, $record[3], $passwd);
+      $provided_hash = UserRecords::pwhash ($username, $record[4], $passwd);
 
-      if ($provided_hash === $record[4]) {
+      if ($provided_hash === $record[5]) {
          $sess_id = util_randstring (32);
          $sess_expiry = time () + (60 * 60 * 5);
          if (($this->user_mod ($username, $sess_id, $sess_expiry,
-                               $record[3], $record[4], $record[5]))===true) {
+                               $record[4], $record[5], $record[6]))===true) {
             return $sess_id;
          }
       }

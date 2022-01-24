@@ -31,31 +31,36 @@ function endBusyMessage () {
    document.documentElement.style.cursor = "auto";
 }
 
-async function fetchWithTimeout(resource, options = {}) {
-  // From: https://dmitripavlutin.com/timeout-fetch-request/
-  /* Usage:
-   * async function loadGames() {
-   *    try {
-   *      const response = await fetchWithTimeout('/games', {
-   *        timeout: 6000
-   *      });
-   *      const games = await response.json();
-   *      return games;
-   *    } catch (error) {
-   *      // Timeouts if the request takes
-   *      // longer than 6 seconds
-   *      console.log(error.name === 'AbortError');
-   *    }
-   * }
-   */
-  const { timeout = 8000 } = options;
+async function callAPI (msg, url, method) {
+  startBusyMessage (msg);
+  var response = await fetch (url,
+                        {
+                          method: method,
+                          mode: 'cors',
+                          cache: 'no-cache',
+                          credentials: 'same-origin',
+                          headers: {
+                            'Content-Type': 'application/json'
+                          },
+                          redirect: 'follow',
+                          referrerPolicy: 'no-referrer',
+                          body: JSON.stringify ('')
+                        });
 
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(resource, {
-    ...options,
-    signal: controller.signal
-  });
-  clearTimeout(id);
-  return response;
+  if (response.status < 200 || response.status > 299) {
+    alert ("Server returned incorrect response code: " + response.status);
+  }
+  var json = { "error_code": 100, "error_message": "JSON Parse error" };
+  try {
+    json = await response.json();
+  } catch (e) {
+    alert ("Failed to parse JSON");
+    endBusyMessage ();
+    return json;
+  }
+  if (json.error_code !== 0) {
+    alert ("Error retrieving data from server\n");
+  }
+  endBusyMessage ();
+  return json;
 }

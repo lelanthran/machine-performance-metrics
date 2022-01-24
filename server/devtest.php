@@ -29,9 +29,6 @@ function reload_session () {
 }
 
 function insert_random_metric () {
-   // TODO: Incomplete
-   // $body = file_get_contents ("php://input");
-   // $object = json_decode ($body, true);
    $object = array (
    "MPM_USER"              => "agent1",
    "MPM_PASSWORD"          => "12345",
@@ -78,7 +75,7 @@ switch ($_REQUEST['action']) {
       break;
 
    case 'remove_user':
-      $output = bool_to_string (util_agent_remove ('agent1'));
+      $output = util_bool_to_string (util_agent_remove ('agent1'));
       break;
 
    case 'add_user':
@@ -103,6 +100,26 @@ switch ($_REQUEST['action']) {
       $output = insert_random_metric ();
       break;
 
+   case 'rsp_error':
+      $output = util_rsp_error (-42, 'A test of the error message');
+      break;
+
+   case 'rsp_table':
+      $test_table = array (
+         array (1.1, 1.2, 1.3, 1.4),
+         array (2.1, 2.2, 2.3, 2.4),
+         array (3.1, 3.2, 3.3, 3.4),
+         array (4.1, 4.2, 4.3, 4.4),
+         array (5.1, 5.2, 5.3, 5.4),
+      );
+      $output = util_rsp_success_table ($test_table, 0, 0);
+      break;
+
+   case 'pquery_run':
+      // $output = pquery_run ('search_user_record', array ('user_name' => 'admin'));
+      $output = "TODO: Unimplemented";
+      break;
+
    default:
    case 'nothing':   $output = "No action specified";
                      break;
@@ -120,6 +137,9 @@ switch ($_REQUEST['action']) {
       <li><a href=devtest.php?action=basic_pgro>Test RO db statement</a></li>
       <li><a href=devtest.php?action=basic_pgrw>Test RW db statement</a></li>
       <li><a href=devtest.php?action=insert_metric>Insert Random metric</a></li>
+      <li><a href=devtest.php?action=rsp_error>Show error response</a></li>
+      <li><a href=devtest.php?action=rsp_table>Show table response</a></li>
+      <li><a href=devtest.php?action=pquery_run>Run prepared query</a></li>
    </ul>
       <pre>
 <?php

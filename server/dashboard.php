@@ -2,8 +2,8 @@
 require_once 'UserRecords.php';
 
 $session_record = $g_userRecords->session_find ($_COOKIE['mpm_sessionid']);
-$g_sess_user_name = $session_record[0];
-$g_sess_user_type = $session_record[5];
+$g_sess_user_name = $session_record[1];
+$g_sess_user_type = $session_record[6];
 
 if (strlen ($g_sess_user_name) <= 2) {
   header ('Location: login.php');
@@ -73,17 +73,11 @@ foreach ($tabcfg as $tab) {
 
 <script>
 
-function getUserList () {
-  return {
-  "table": [ ["a", "A", 1.3],
-             ["b", "B", 2.3],
-             ["m", "C", 3.3],
-             ["c", "D", 4.3],
-             ["n", "E", 5.3],
-             ["d", "F", 6.3],
-             ["o", "G", 7.3],
-           ],
-  };
+async function getUserList () {
+  // TODO: Stopped here last - the editPopup should be added by the LiveTable
+  // itself.
+  var retval = await callAPI ('Getting userlist', 'admin_userlist.php', 'POST');
+  return retval;
 }
 
 function updateUserRecord (row) {

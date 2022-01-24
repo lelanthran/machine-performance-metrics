@@ -1,13 +1,16 @@
 
 /* *************************************************************
  * TODO:
- * 1. Refactor all the `this.element.childNodes[i].firstChild` etc
- *    into `getRefreshButtons()`, `getDeleteButtons()` etc. Maybe
- *    best to simply store them in an array of two elements when
- *    they are created.
  *
- * 2. Add in paging controls - firstPage, prevPage, nextPage and
- *    lastPage.
+ *  Add a field controlling whether the first column is an ID. If
+ *  it is it must not be editable.
+ *
+ *  Add a field controlling whether or not a editPopup is allowed.
+ *  If it is, then the first column *MUST BE* an ID.
+ *
+ *  Add in paging controls - firstPage, prevPage, nextPage and
+ *  lastPage.
+ *
  *
  */
 function stringCompare (str1, str2) {
@@ -279,7 +282,10 @@ class LiveTable {
         var input = createAttachedElement ("input", td, null);
         input.value = this.data.table[i][j];
         input.classList = this.inputClassList;
-        input.size = input.value.length;
+        var slen = input.value.length;
+        if (slen > 0) {
+          input.size = slen;
+        }
         input.onchange = function () {
           var localTr = this.parentNode.parentNode;
           var topSaveBtn = localTr.parentNode.parentNode.parentNode.firstChild.childNodes[1];
@@ -327,12 +333,15 @@ class LiveTable {
     return div;
   }
 
-  render () {
+  async render () {
     if (this.data == null) {
-      this.data = this.dataFunc ({
+      this.data = await this.dataFunc ({
         "Page":       this.currentPage,
         "PageSize":   this.pageSize
       });
+      if (this.data == null) {
+        return;
+      }
       this.dataHeaders = this.data.table.shift ();
     }
 

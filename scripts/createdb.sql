@@ -121,3 +121,16 @@ CREATE TABLE tbl_diskmetrics (
 
 CREATE INDEX idx_tbl_diskmetrics_metrics ON tbl_diskmetrics (c_metrics);
 
+
+CREATE TABLE tbl_pqueries (
+   id                BIGSERIAL PRIMARY KEY,
+   c_user            BIGINT,
+   c_qname           VARCHAR(250),
+   c_qstring         TEXT,
+   c_qparams         TEXT,
+   FOREIGN KEY (c_user) REFERENCES tbl_user (id);
+);
+
+CREATE INDEX idx_tbl_pqueries_user ON tbl_queries (c_user);
+CREATE INDEX idx_tbl_pqueries_qname ON tbl_queries (c_qname);
+

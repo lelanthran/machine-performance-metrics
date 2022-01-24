@@ -7,9 +7,58 @@ function util_randstring (int $nbytes) :string {
    return bin2hex (random_bytes ($nbytes));
 }
 
-function bool_to_string (bool $val) :string {
+function util_bool_to_string (bool $val) :string {
    return $val===false ? 'FALSE' : 'TRUE';
 }
+
+function util_rsp_error (int $code, string $message) :string {
+   return
+      '{' . "\n" .
+      '   "error_code":     ' . $code . ',' . "\n" .
+      '   "error_message":  "' . $message . "\"\n" .
+      '}';
+}
+
+function util_rsp_success () :string {
+   return util_rsp_error (0, 'Success');
+}
+
+function util_rsp_success_table (array $table, int $page_nr, int $npages) :string {
+   $prefix =
+      '{' . "\n" .
+      '   "error_code":     0,' . "\n" .
+      '   "error_message":  "Success",' . "\n" .
+      '   "page_number":    ' . $page_nr . ",\n" .
+      '   "page_count":     ' . $npages . ",\n";
+   $postfix = '}';
+
+   $sdata = '"table": [' . "\n";
+   $rdelim = '';
+   foreach ($table as $row) {
+      $srow = '[ ';
+      $fdelim = '';
+      foreach ($row as $field) {
+         $srow .= $fdelim . '"' . $field . '"';
+         $fdelim = ', ';
+      }
+      $srow .= " ]";
+      $sdata .= $rdelim . $srow;
+      $rdelim = ",\n";
+   }
+   $sdata .= "\n]";
+
+   return $prefix . $sdata . $postfix;
+}
+
+function util_userTypeString (int $n) :string {
+   switch ($n) {
+   case 0:  return 'Administrator';
+   case 1:  return 'Operator';
+   case 2:  return 'Standard';
+   }
+   return 'Unknown';
+}
+
 
 function util_agent_remove (string $agent_name) :bool {
    global $g_dbconn_rw;
