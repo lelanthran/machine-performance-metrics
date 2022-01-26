@@ -31,8 +31,12 @@ function endBusyMessage () {
    document.documentElement.style.cursor = "auto";
 }
 
-async function callAPI (msg, url, method) {
+async function callAPI (msg, url, method, obj) {
   startBusyMessage (msg);
+  var body = '';
+  if (obj != null) {
+    body = JSON.stringify (obj);
+  }
   var response = await fetch (url,
                         {
                           method: method,
@@ -44,7 +48,7 @@ async function callAPI (msg, url, method) {
                           },
                           redirect: 'follow',
                           referrerPolicy: 'no-referrer',
-                          body: JSON.stringify ('')
+                          body: body
                         });
 
   if (response.status < 200 || response.status > 299) {

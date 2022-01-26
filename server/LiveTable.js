@@ -2,35 +2,39 @@
 /* *************************************************************
  * TODO:
  *
- *  Add a field controlling whether the first column is an ID. If
- *  it is it must not be editable.
- *
  *  Add a field controlling whether or not a editPopup is allowed.
  *  If it is, then the first column *MUST BE* an ID.
+ *
+ *  Add function for each input - getValue(). This must return the
+ *  correct value depending on the inputElement (for example, checkbox
+ *  must return a boolean).
  *
  *  Add in paging controls - firstPage, prevPage, nextPage and
  *  lastPage.
  *
  *
  */
+
 function stringCompare (str1, str2) {
   return str1 < str2 ? -1 : str1 > str2;
 }
 
 function disableTableRow (tr, classList) {
   for (var i=1; i<tr.childNodes.length; i++) {
-    var td = tr.childNodes[i].childNodes[0];
-    td.readOnly = true;
-    td.classList = classList;
+    var input = tr.childNodes[i].childNodes[0];
+    input.readOnly = true;
+    input.classList = classList;
   };
   tr.disabled = true;
 }
 
 function enableTableRow (tr, classList) {
   for (var i=1; i<tr.childNodes.length; i++) {
-    var td = tr.childNodes[i].childNodes[0];
-    td.readOnly = false;
-    td.classList = classList;
+    var input = tr.childNodes[i].childNodes[0];
+    if (input.fieldSpec !== 'ID') {
+      input.readOnly = false;
+      input.classList = classList;
+    }
   };
   tr.disabled = false;
 }
@@ -46,12 +50,55 @@ function createAttachedElement (elType, parentNode, classList) {
   return element;
 }
 
+function setFieldValue (element, value) {
+  if (element.fieldSpec !== undefined && element.fieldSpec.search ('ENUM') === 0) {
+    var options = element.fieldSpec.split (':');
+    for (var i=1; i<options.length; i++) {
+      var opt = createAttachedElement ('option', element, null);
+      opt.value = options[i];
+      opt.innerHTML = options[i];
+      if (value === opt.value)
+        opt.selected = true;
+    }
+    if (element.fieldSpec.search (value) < 0) {
+      var opt = createAttachedElement ('option', element, null);
+      opt.value = value;
+      opt.innerHTML = value;
+      opt.disabled = true;
+      opt.selected = true;
+    }
+    return;
+  }
+  if (element.fieldSpec == 'CHECKBOX') {
+    element.checked = (value === 'TRUE')
+    return;
+  }
+
+  element.value = value;
+  var slen = element.value.length;
+  if (slen > 0) {
+    element.size = slen;
+  }
+}
+
+function createFieldInput (fieldSpec, parentNode, classList) {
+  if (fieldSpec.search ('ENUM') === 0) {
+    var dropdown = createAttachedElement ('select', parentNode, classList);
+    dropdown.fieldSpec = fieldSpec;
+    return dropdown;
+  } else {
+    var element = createAttachedElement ('input', parentNode, classList);
+    element.fieldSpec = fieldSpec;
+    if (fieldSpec === 'CHECKBOX') {
+      element.type = 'checkbox';
+    }
+    return element;
+  }
+}
+
 class LiveTable {
   constructor (dataFunc, recUpdateFunc, recRemoveFunc) {
-    this.parentNodeId = null;
-    this.parentNode = null;
-    this.element = null;
-
+    // Public fields, must be set by caller
     this.divClassList = 'default_divClass';
     this.tableClassList = 'default_tableClass';
     this.theadClassList = 'default_threadClass';
@@ -71,6 +118,16 @@ class LiveTable {
     this.editableRowClassList = 'default_editableRowClass';
     this.uneditableRowClassList = 'default_uneditableRowClass';
     this.changedRowClassList = 'default_changedRowClass';
+    this.inlineDeleteBtnClassList = 'default_inlineDeleteBtnClassList';
+    this.inlineEditBtnClassList = 'default_inlineEditBtnClassList';
+
+    this.recordInlineEditFunc = null;
+    this.recordInlineDeleteFunc = null;
+
+    // Private fields
+    this.parentNodeId = null;
+    this.parentNode = null;
+    this.element = null;
 
     this.dataFunc = dataFunc;
     this.recUpdateFunc = recUpdateFunc;
@@ -81,6 +138,17 @@ class LiveTable {
     this.columnsSortDirections = [];
 
     this.nchecks = 0;
+
+    this.fieldSpec = [];
+
+  }
+
+  setFieldSpec (fieldNumber, spec) {
+    var currentLen = this.fieldSpec.length;
+    for (var i=currentLen; i<fieldNumber+1; i++) {
+      this.fieldSpec.push ('default');
+    }
+    this.fieldSpec[fieldNumber] = spec;
   }
 
   getSaveButtons () {
@@ -162,6 +230,7 @@ class LiveTable {
 
     btnRefresh.innerHTML = "Refresh";
     btnRefresh.onclick = () => {
+      this.data = null;
       this.render ();
     }
 
@@ -279,13 +348,8 @@ class LiveTable {
       this.createRowCheckbox (tr, i);
       for (var j=0; j<ncols; j++) {
         var td = createAttachedElement ("td", tr, this.tdClassList);
-        var input = createAttachedElement ("input", td, null);
-        input.value = this.data.table[i][j];
-        input.classList = this.inputClassList;
-        var slen = input.value.length;
-        if (slen > 0) {
-          input.size = slen;
-        }
+        var input = createFieldInput (this.fieldSpec[j], td, this.inputClassList);
+        setFieldValue (input, this.data.table[i][j]);
         input.onchange = function () {
           var localTr = this.parentNode.parentNode;
           var topSaveBtn = localTr.parentNode.parentNode.parentNode.firstChild.childNodes[1];
@@ -313,7 +377,10 @@ class LiveTable {
         }
         for (var i=1; i<this.childNodes.length; i++) {
           var input = this.childNodes[i].childNodes[0];
-          input.size = input.value.length;
+          var slen = input.value.length;
+          if (slen > 0 && input.fieldSpec.search ('ENUM') != 0) {
+            input.size = slen;
+          }
         }
       }
 
@@ -327,6 +394,34 @@ class LiveTable {
           enableTableRow (this, eClass);
         }
       };
+
+      if (this.recordInlineEditFunc != null) {
+        var btn = createAttachedElement ("button", tr, this.inlineEditBtnClassList);
+        btn.innerHTML = '🖉';
+        btn.tr = tr;
+        btn.obj = this;
+        btn.onclick = function () {
+          var localRow = [];
+          for (var i=1; i<this.tr.childNodes.length; i++) {
+            localRow.push (this.tr.childNodes[i].firstChild.value);
+          }
+          this.obj.recordInlineEditFunc (localRow);
+        };
+      }
+      if (this.recordInlineDeleteFunc != null) {
+        var btn = createAttachedElement ("button", tr, this.inlineDeleteBtnClassList);
+        btn.innerHTML = '✗';
+        btn.tr = tr;
+        btn.obj = this;
+        btn.onclick = function () {
+          var localRow = [];
+          for (var i=1; i<this.tr.childNodes.length; i++) {
+            localRow.push (this.tr.childNodes[i].firstChild.value);
+          }
+          this.obj.recordInlineDeleteFunc (localRow);
+          this.obj.render ();
+        };
+      }
       tbody.appendChild (tr);
     }
     var bottomPageCtl = this.createPageCtl (div);

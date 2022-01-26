@@ -62,20 +62,13 @@ foreach ($tabcfg as $tab) {
 
   <div id="Administration" class="tabcontent">
     <h3>Administration</h3>
-    <p>Administration Stuff goes here</p>
-    <p>TODO: Display a list of actions (open in new window):
-      <ul>
-        <li>User filter</li>
-        <li>Add new user</li>
-      </ul>
+    <p><button onclick='window.open ("useradd.php")'>Create new user</button>
     </p>
   </div>
 
 <script>
 
 async function getUserList () {
-  // TODO: Stopped here last - the editPopup should be added by the LiveTable
-  // itself.
   var retval = await callAPI ('Getting userlist', 'admin_userlist.php', 'POST');
   return retval;
 }
@@ -90,6 +83,16 @@ function deleteUserRecord (row) {
 }
 
 var userAdminTable = new LiveTable (getUserList, updateUserRecord, deleteUserRecord);
+userAdminTable.setFieldSpec (0, 'ID');
+userAdminTable.setFieldSpec (2, 'CHECKBOX');
+userAdminTable.setFieldSpec (3, 'ENUM:Administrator:Operator:Standard');
+userAdminTable.recordInlineEditFunc = function (row) {
+  console.log ("Inline editing function: " + row);
+  return true;
+}
+userAdminTable.recordInlineDeleteFunc = function (row) {
+  return deleteUserRecord (row);
+}
 
 // userAdminTable.tableClassList = "default_tableClass";
 // userAdminTable.theadClassList = "default_theadClass";
