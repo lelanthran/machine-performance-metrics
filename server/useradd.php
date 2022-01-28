@@ -27,6 +27,9 @@
          <td>Password:</td><td><input id=password placeholder='password' type=password /></td>
       </tr>
       <tr>
+         <td>Password:</td><td><input id=password placeholder='cpassword' type=password /></td>
+      </tr>
+      <tr>
          <td>UserType:</td><td><select id=usertype />
                                  <option value=Administrator>Administrator</option>
                                  <option value=Operator>Operator</option>
@@ -47,12 +50,13 @@ async function createUser () {
    var usertype = document.getElementById ('usertype').value;
 
    var obj = {
-   "username": user,
-   "password": password,
-   "usertype": usertype
+   "username":    user,
+   "password":    password,
+   "cpassword":   password,
+   "usertype":    usertype
    };
 
-   var result = await callAPI ('Creating user', 'admin_useradd.php', 'POST', obj);
+   var result = await callAPI_Verbose ('Creating user', 'admin_useradd.php', 'POST', obj);
 
    document.getElementById ('result_message').innerHTML = result.error_message;
    if (result.error_code == 0) {

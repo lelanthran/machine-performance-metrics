@@ -41,6 +41,14 @@ function verify_parameters (array $params) :void {
    }
 }
 
+function get_optional_param (string $pname) :string {
+   global $g_object;
+   if ((isset ($g_object[$pname]))) {
+      return $g_object[$pname];
+   }
+   return "";
+}
+
 header ("Content-type: application/json");
 
 ?>

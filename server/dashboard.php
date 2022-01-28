@@ -1,14 +1,5 @@
 <?php
-require_once 'UserRecords.php';
-
-$session_record = $g_userRecords->session_find ($_COOKIE['mpm_sessionid']);
-$g_sess_user_name = $session_record[1];
-$g_sess_user_type = $session_record[6];
-
-if (strlen ($g_sess_user_name) <= 2) {
-  header ('Location: login.php');
-}
-
+require_once 'session.php';
 ?>
 <html>
 <head>
@@ -17,16 +8,41 @@ if (strlen ($g_sess_user_name) <= 2) {
   <link rel="stylesheet" href="defaultLiveTableClasses.css">
   <script type="text/javascript" src="mpm.js"></script>
   <script type="text/javascript" src="LiveTable.js"></script>
+  <script>
+  function setFirstTab () {
+    var adminTab    = document.getElementById('btnAdministration');
+    var operationsTab = document.getElementById('btnOperations');
+    var reportsTab  = document.getElementById('btnReports');
+    var chartsTab   = document.getElementById('btnCharts');
+    var queriesTab  = document.getElementById('btnQueries');
+    if (adminTab != null) {
+      adminTab.click ();
+      return;
+    }
+    if (operationsTab != null) {
+      operationsTab.click ();
+      return;
+    }
+    if (queriesTab != null) {
+      queriesTab.click ();
+      return;
+    }
+    if (chartsTab != null) {
+      chartsTab.click ();
+      return;
+    }
+    if (reportsTab != null) {
+      reportsTab.click ();
+      return;
+    }
+  }
+  </script>
 </head>
-<body onload="document.getElementById('btnAdministration').click()">
+<body onload="setFirstTab();">
 
   <h3>MPM Dashboard</h3>
 
   <div id="busyMessage" class="overlay">
-
-    <!-- Button to close the overlay navigation -->
-    <a href="javascript:void(0)" class="closebtn" onclick="updateBusyMessage('Still busy')">Update busy message</a>
-    <a href="javascript:void(0)" class="closebtn" onclick="endBusyMessage()">End busy message</a>
 
     <!-- Overlay content -->
     <div class="overlay-content">
@@ -36,12 +52,13 @@ if (strlen ($g_sess_user_name) <= 2) {
 
   </div>
   <div class="tab">
-  <button onclick='startBusyMessage ("Busy")'> start busy message</button>
 <?php
 $tabcfg = [
   array (0, 'Administration', 'Administration', ''),
   array (1, 'Operations', 'Operations', ''),
   array (2, 'Reports', 'Reports', ''),
+  array (2, 'Charts', 'Charts', ''),
+  array (2, 'Queries', 'Queries', ''),
 ];
 
 foreach ($tabcfg as $tab) {
@@ -52,8 +69,10 @@ foreach ($tabcfg as $tab) {
     echo "    <button id=btn$id class='tablinks' onclick=\"openTab(event, '$id')\">$name</button>\n";
   }
 }
+echo "\n<script>\nconst userLevel = $g_sess_user_type;\n</script>\n";
 ?>
     <span style="display: flex; justify-content: flex-end;">
+      <button class=tablinks onclick='window.location.href="logout.php";'>Logout</button>
 <?php
   echo "      <button class='tablinks' onclick=\"openTab(event, 'Settings')\">$g_sess_user_name</button>\n";
 ?>
@@ -68,56 +87,81 @@ foreach ($tabcfg as $tab) {
 
 <script>
 
-async function getUserList () {
-  var retval = await callAPI ('Getting userlist', 'admin_userlist.php', 'POST');
-  return retval;
-}
+if (userLevel == 0) {
+  async function getUserList () {
+    var retval = await callAPI_Verbose ('Getting userlist', 'admin_userlist.php', 'POST');
+    return retval;
+  }
 
-function updateUserRecord (row) {
-  console.log (`Updating ${row}`);
-  return false;
-}
+  async function updateUserRecord (row) {
+    var obj = { "userid": row[0], "username": row[1], "usertype": row[3] };
 
-function deleteUserRecord (row) {
-  console.log (`deleting ${row}`);
-}
+    console.log (obj);
+    var retval = await callAPI_Verbose ('Saving user ' + row[1], 'admin_usermod.php', 'POST', obj);
+    return true;
+  }
 
-var userAdminTable = new LiveTable (getUserList, updateUserRecord, deleteUserRecord);
-userAdminTable.setFieldSpec (0, 'ID');
-userAdminTable.setFieldSpec (2, 'CHECKBOX');
-userAdminTable.setFieldSpec (3, 'ENUM:Administrator:Operator:Standard');
-userAdminTable.recordInlineEditFunc = function (row) {
-  console.log ("Inline editing function: " + row);
-  return true;
-}
-userAdminTable.recordInlineDeleteFunc = function (row) {
-  return deleteUserRecord (row);
-}
+  async function deleteUserRecord (row) {
+    var obj = { "username": row[1] };
+    var retval = await callAPI_Verbose ('Deleting ' + row[1], 'admin_userdel.php', 'POST', obj);
+    if (retval.error_code!=0) {
+      alert ("Failed to delete record " + obj.username);
+      return false;
+    }
+    return true;
+  }
 
-// userAdminTable.tableClassList = "default_tableClass";
-// userAdminTable.theadClassList = "default_theadClass";
-// userAdminTable.tbodyClassList = "default_tbodyClass";
-// userAdminTable.trOddClassList = "default_trOddClass";
-// userAdminTable.trEvenClassList = "default_trEvenClass";
-// userAdminTable.uneditableRowClassList = "default_uneditableRowClass";
-// userAdminTable.editableRowClassList = "default_editableRowClass";
-// userAdminTable.sortBtnClassList = "default_sortBtn";
-// userAdminTable.changedRowClassList = "default_changedRowClass";
+  var userAdminTable = new LiveTable (getUserList, updateUserRecord, deleteUserRecord);
+  userAdminTable.recUpdateFunc = updateUserRecord;
+  userAdminTable.recRemoveFunc = deleteUserRecord;
+  userAdminTable.setFieldSpec (0, 'ID');
+  userAdminTable.setFieldSpec (2, 'READONLY');
+  userAdminTable.setFieldSpec (3, 'ENUM:Administrator:Operator:Standard');
+  userAdminTable.recordInlineEditFunc = function (row) {
+    window.open ('usermod.php?username=' + row[1] + "&userid=" + row[0]);
+    return true;
+  }
+  userAdminTable.recordInlineDeleteFunc = function (row) {
+    return deleteUserRecord (row);
+  }
 
-userAdminTable.parentNodeId  = 'Administration';
-userAdminTable.render ();
+  userAdminTable.parentNodeId  = 'Administration';
+  document.getElementById ('btnAdministration').renderFunc = function () {
+    userAdminTable.render ();
+  }
+}
 
 </script>
 
   <div id="Operations" class="tabcontent">
     <h3>Operations</h3>
-    <p>Operations stuff goes here.</p> 
+    <p>Operations stuff goes here.</p>
     <p>TODO: Display a list of actions (open in new window):
       <ul>
         <li>Machine filter</li>
         <li>Add new machine</li>
       </ul>
     </p>
+<script>
+
+if (userLevel >= 0 && userLevel <= 1) {
+  async function getMachineList () {
+    var retval = await callAPI_Verbose ('Getting machine list', 'ops_machinelist.php', 'POST');
+    return retval;
+  }
+
+  var machineOpsTable = new LiveTable (getMachineList);
+  machineOpsTable.setFieldSpec (0, 'LINK:machineview.php');
+  machineOpsTable.setFieldSpec (1, 'READONLY');
+
+  machineOpsTable.parentNodeId  = 'Operations';
+  document.getElementById ('btnOperations').renderFunc = function () {
+    machineOpsTable.render ();
+  }
+}
+
+</script>
+
   </div>
 
   <div id="Reports" class="tabcontent">
@@ -127,8 +171,35 @@ userAdminTable.render ();
       <ul>
         <li>Table of alerts + link to full table.</li>
         <li>Search for report</li>
-        <li>Open query-tool</li>
+        <li>Open report-creator</li>
         <li>Display 4 of the trending reports for all users</li>
+        <li>Display quicklinks based on what this user used most</li>
+      </ul>
+    </p>
+  </div>
+
+  <div id="Charts" class="tabcontent">
+    <h3>Charts</h3>
+    <p>Charts stuff goes here</p>
+    <p>TODO: Display a list of actions (open in new window):
+      <ul>
+        <li>Search for Charts</li>
+        <li>Open chart-creator</li>
+        <li>Display 4 of the trending Charts for all users</li>
+        <li>Display quicklinks based on what this user used most</li>
+      </ul>
+    </p>
+  </div>
+
+  <div id="Queries" class="tabcontent">
+    <h3>Queries</h3>
+    <p>Queries stuff goes here</p>
+    <p>TODO: Display a list of actions (open in new window):
+      <ul>
+        <li>Table of alerts + link to full table.</li>
+        <li>Search for Queries</li>
+        <li>Open query-creator</li>
+        <li>Display 4 of the trending Queries for all users</li>
         <li>Display quicklinks based on what this user used most</li>
       </ul>
     </p>

@@ -89,3 +89,9 @@ body {
   display: block; /* Display block instead of inline */
   transition: 0.3s; /* Transition effects on hover (color) */
 }
+
+.disabled_label {
+  color:  #999999;
+}
+
+

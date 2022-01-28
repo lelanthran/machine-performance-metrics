@@ -3,8 +3,14 @@
 require_once 'api_common.php';
 
 verify_access (0);
-verify_parameters (['username', 'password', 'usertype']);
+verify_parameters (['username', 'cpassword', 'password', 'usertype']);
 
+if ((strcmp ($g_object['cpassword'], $g_object['password']))!==0) {
+   echo util_rsp_error (-1008, "Passwords don't match: " .
+                               $g_object['username'] .
+                               ':' .
+                               $g_object['usertype']);
+}
 
 $usertype = -1;
 

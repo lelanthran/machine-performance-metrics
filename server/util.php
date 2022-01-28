@@ -1,6 +1,8 @@
 <?php
 declare (strict_types=1);
 
+require_once 'mpm_server.creds';
+require_once 'DBConnection.php';
 require_once 'UserRecords.php';
 
 function util_randstring (int $nbytes) :string {
@@ -9,6 +11,18 @@ function util_randstring (int $nbytes) :string {
 
 function util_bool_to_string (bool $val) :string {
    return $val===false ? 'FALSE' : 'TRUE';
+}
+
+function util_get_usertype_enum (string $usertype) :int {
+  $usertype = strtolower ($usertype);
+  switch ($usertype) {
+     case 'administrator':   return 0;
+     case 'operator':        return 1;
+     case 'standard':
+     case 'standard-user':
+     case 'standard user':   return 2;
+  }
+  return -1;
 }
 
 function util_rsp_error (int $code, string $message) :string {
@@ -59,6 +73,20 @@ function util_userTypeString (int $n) :string {
    return 'Unknown';
 }
 
+
+function util_agent_list () :array {
+   global $g_dbconn_ro;
+
+   $result = $g_dbconn_ro->query (
+      'SELECT DISTINCT tbl_metrics.c_hostname AS "Hostname", tbl_agent.c_agent AS "LoginID"
+       FROM tbl_agent, tbl_metrics WHERE tbl_agent.id = tbl_metrics.c_agent',
+         array ()
+   );
+   if (DBConnection::querySucceeded ($result)==true) {
+      return $result;
+   }
+   return [ ['Hostname', 'Machine login'] ];
+}
 
 function util_agent_remove (string $agent_name) :bool {
    global $g_dbconn_rw;

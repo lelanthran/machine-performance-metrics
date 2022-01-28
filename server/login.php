@@ -3,13 +3,18 @@ require_once 'UserRecords.php';
 
 $error_msg = '';
 
-if (isset ($_POST['username'])) {
-   $sessid = $g_userRecords->user_auth ($_POST['username'], $_POST['password']);
+if (isset ($_REQUEST['username'])) {
+   $password = '';
+   if (isset ($_REQUEST['password'])) {
+      $password = $_REQUEST['password'];
+   }
+   $sessid = $g_userRecords->user_auth ($_REQUEST['username'], $password);
    setcookie ('mpm_sessionid', $sessid);
    if (strlen ($sessid)<=4) {
       $error_msg = 'Login failure';
    } else {
       header ('Location: dashboard.php');
+      exit (0);
    }
 }
 

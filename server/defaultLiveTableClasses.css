@@ -129,6 +129,10 @@
   margin-right: 10px;
 }
 
+.default_inlineDeleteBtnClassList:hover {
+  cursor: pointer;
+}
+
 .default_inlineEditBtnClassList {
   background-color: inherit;
   border-style: none;
@@ -138,5 +142,9 @@
   font-size: 16px;
   margin-right: 10px;
   margin-left: 10px;
+}
+
+.default_inlineEditBtnClassList:hover {
+  cursor: pointer;
 }
 

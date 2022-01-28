@@ -31,7 +31,7 @@ function disableTableRow (tr, classList) {
 function enableTableRow (tr, classList) {
   for (var i=1; i<tr.childNodes.length; i++) {
     var input = tr.childNodes[i].childNodes[0];
-    if (input.fieldSpec !== 'ID') {
+    if (input.fieldSpec !== 'ID' && input.fieldSpec !== 'READONLY') {
       input.readOnly = false;
       input.classList = classList;
     }
@@ -69,6 +69,14 @@ function setFieldValue (element, value) {
     }
     return;
   }
+  if (element.fieldSpec !== undefined && element.fieldSpec.search ('LINK') === 0) {
+    var url = element.fieldSpec.split ("LINK:")[1];
+    console.log (url);
+    element.innerHTML = value;
+    element.href = url + '?id=' + value;
+    element.target = element.href + '_' + value;
+    return;
+  }
   if (element.fieldSpec == 'CHECKBOX') {
     element.checked = (value === 'TRUE')
     return;
@@ -82,22 +90,26 @@ function setFieldValue (element, value) {
 }
 
 function createFieldInput (fieldSpec, parentNode, classList) {
-  if (fieldSpec.search ('ENUM') === 0) {
+  if (fieldSpec != undefined && fieldSpec.search ('ENUM') === 0) {
     var dropdown = createAttachedElement ('select', parentNode, classList);
     dropdown.fieldSpec = fieldSpec;
     return dropdown;
-  } else {
-    var element = createAttachedElement ('input', parentNode, classList);
-    element.fieldSpec = fieldSpec;
-    if (fieldSpec === 'CHECKBOX') {
-      element.type = 'checkbox';
-    }
-    return element;
   }
+  if (fieldSpec != undefined && fieldSpec.search ('LINK') === 0) {
+    var anchor = createAttachedElement ('a', parentNode, classList);
+    anchor.fieldSpec = fieldSpec;
+    return anchor;
+  }
+  var element = createAttachedElement ('input', parentNode, classList);
+  element.fieldSpec = fieldSpec;
+  if (fieldSpec === 'CHECKBOX') {
+    element.type = 'checkbox';
+  }
+  return element;
 }
 
 class LiveTable {
-  constructor (dataFunc, recUpdateFunc, recRemoveFunc) {
+  constructor (dataFunc) {
     // Public fields, must be set by caller
     this.divClassList = 'default_divClass';
     this.tableClassList = 'default_tableClass';
@@ -130,8 +142,8 @@ class LiveTable {
     this.element = null;
 
     this.dataFunc = dataFunc;
-    this.recUpdateFunc = recUpdateFunc;
-    this.recRemoveFunc = recRemoveFunc;
+    this.recUpdateFunc = null;
+    this.recRemoveFunc = null;
     this.sortFuncs = new Object ();
     this.data = null;
     this.dataHeaders = null;
@@ -245,6 +257,10 @@ class LiveTable {
       bottomSaveBtn.disabled = true;
       bottomSaveBtn.classList = this.pageCtlDisabledBtnClassList;
     }
+    if (this.recUpdateFunc == null) {
+      btnSaveChanges.style.display = 'none';
+    }
+
 
     btnDelete.innerHTML = "Delete";
     btnDelete.disabled = true;
@@ -255,6 +271,9 @@ class LiveTable {
       bottomDeleteBtn.disabled = false;
       this.removeCheckedRecords ();
     }
+    if (this.recRemoveFunc == null) {
+      btnDelete.style.display = 'none';
+    }
 
     return div;
   }
@@ -264,6 +283,7 @@ class LiveTable {
     cb.type = "checkbox";
     cb.rowNumber = rowNumber;
     if (rowNumber < 0) {
+      cb.title = 'Click to select all records';
       cb.onclick = () => {
         var checkedValue = cb.checked;
         this.element.childNodes[1].childNodes[1].childNodes.forEach ((row) => {
@@ -286,6 +306,7 @@ class LiveTable {
         }
       }
     } else {
+      cb.title = 'Click to select this record';
       cb.onclick = () => {
         if (cb.checked == true) {
           this.nchecks++;
@@ -345,12 +366,14 @@ class LiveTable {
       var trClassList = (i % 2) == 1 ? this.trOddClassList : this.trEvenClassList;
       var tr = createAttachedElement ("tr", tbody, trClassList);
       tr.changed = false;
+      tr.title = "Click for quick edit";
       this.createRowCheckbox (tr, i);
       for (var j=0; j<ncols; j++) {
         var td = createAttachedElement ("td", tr, this.tdClassList);
         var input = createFieldInput (this.fieldSpec[j], td, this.inputClassList);
         setFieldValue (input, this.data.table[i][j]);
         input.onchange = function () {
+          console.log ('onChanged triggered');
           var localTr = this.parentNode.parentNode;
           var topSaveBtn = localTr.parentNode.parentNode.parentNode.firstChild.childNodes[1];
           var bottomSaveBtn = localTr.parentNode.parentNode.parentNode.lastChild.childNodes[1];
@@ -377,9 +400,11 @@ class LiveTable {
         }
         for (var i=1; i<this.childNodes.length; i++) {
           var input = this.childNodes[i].childNodes[0];
-          var slen = input.value.length;
-          if (slen > 0 && input.fieldSpec.search ('ENUM') != 0) {
-            input.size = slen;
+          if (input != undefined) {
+            var slen = input.value == undefined ? 0 : input.value.length;
+            if (slen > 0 && input.fieldSpec.search ('ENUM') != 0) {
+              input.size = slen;
+            }
           }
         }
       }
@@ -400,6 +425,7 @@ class LiveTable {
         btn.innerHTML = '🖉';
         btn.tr = tr;
         btn.obj = this;
+        btn.title = "Edit record " + btn.tr.childNodes[1].firstChild.value;
         btn.onclick = function () {
           var localRow = [];
           for (var i=1; i<this.tr.childNodes.length; i++) {
@@ -413,13 +439,20 @@ class LiveTable {
         btn.innerHTML = '✗';
         btn.tr = tr;
         btn.obj = this;
+        btn.title = "Delete record " + btn.tr.childNodes[1].firstChild.value;
         btn.onclick = function () {
           var localRow = [];
           for (var i=1; i<this.tr.childNodes.length; i++) {
             localRow.push (this.tr.childNodes[i].firstChild.value);
           }
-          this.obj.recordInlineDeleteFunc (localRow);
-          this.obj.render ();
+          var tmp = this.obj.recordInlineDeleteFunc (localRow);
+          tmp.then (result => {
+            console.log (result);
+            if (result == true) {
+              this.obj.data = null;
+              this.obj.render ().then (() => { console.log ("rendered"); });
+            }
+          });
         };
       }
       tbody.appendChild (tr);
@@ -435,6 +468,7 @@ class LiveTable {
         "PageSize":   this.pageSize
       });
       if (this.data == null) {
+        console.log ("Data failure");
         return;
       }
       this.dataHeaders = this.data.table.shift ();

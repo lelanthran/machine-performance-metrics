@@ -9,6 +9,13 @@ if [ -z "$1" ]; then
    exit 127
 fi
 
+if [ -z "$2" ]; then
+   HOSTNAME="`hostname -f`"
+else
+   HOSTNAME="$2"
+fi
+
+
 MPM_USER=""
 . $HOME/.mpm_agent.creds
 
@@ -24,7 +31,6 @@ fi
 
 TSTAMP="`date -Iseconds`"
 KERNEL="`uname -a`"
-HOSTNAME="`hostname -f`"
 
 TMPVAR="`free`"
 STATS_MEMORY="`echo $TMPVAR | cut -f8-17 -d \  `"

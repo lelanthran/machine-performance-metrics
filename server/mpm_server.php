@@ -2,8 +2,8 @@
 
 header ('Content-type=application/json');
 
-require 'mpm_server.creds';
-require 'util.php';
+require_once 'mpm_server.creds';
+require_once 'util.php';
 
 
 $body = file_get_contents("php://input");
