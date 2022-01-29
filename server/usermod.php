@@ -108,8 +108,6 @@ async function editUser () {
       cpassword = '';
    }
 
-   alert (user);
-
    var obj = {
    "userid":               userId,
    "username":             user,

@@ -151,10 +151,13 @@ if (userLevel >= 0 && userLevel <= 1) {
   }
 
   var machineOpsTable = new LiveTable (getMachineList);
-  machineOpsTable.setFieldSpec (0, 'LINK:machineview.php');
-  machineOpsTable.setFieldSpec (1, 'READONLY');
+  machineOpsTable.setFieldSpec (0, 'READONLY');
+  machineOpsTable.setFieldSpec (1, 'LINK:machineview.php');
+  machineOpsTable.setFieldSpec (2, 'READONLY');
 
   machineOpsTable.parentNodeId  = 'Operations';
+
+
   document.getElementById ('btnOperations').renderFunc = function () {
     machineOpsTable.render ();
   }

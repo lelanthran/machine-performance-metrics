@@ -78,14 +78,19 @@ function util_agent_list () :array {
    global $g_dbconn_ro;
 
    $result = $g_dbconn_ro->query (
-      'SELECT DISTINCT tbl_metrics.c_hostname AS "Hostname", tbl_agent.c_agent AS "LoginID"
-       FROM tbl_agent, tbl_metrics WHERE tbl_agent.id = tbl_metrics.c_agent',
+      'SELECT ' .
+      '        tbl_agent.c_agent AS Credentials,' .
+      '        tbl_metrics.c_hostname AS Hostname,' .
+      '        COUNT(tbl_metrics.c_hostname) AS Count' .
+      '  FROM tbl_metrics, tbl_agent' .
+      '  WHERE tbl_metrics.c_agent = tbl_agent.id' .
+      '  GROUP BY tbl_metrics.c_hostname, tbl_agent.c_agent;',
          array ()
    );
    if (DBConnection::querySucceeded ($result)==true) {
       return $result;
    }
-   return [ ['Hostname', 'Machine login'] ];
+   return [ ['Host', 'Usage Count', 'Username'] ];
 }
 
 function util_agent_remove (string $agent_name) :bool {
