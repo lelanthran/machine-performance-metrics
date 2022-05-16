@@ -15,24 +15,24 @@ require_once 'session.php';
     var reportsTab  = document.getElementById('btnReports');
     var chartsTab   = document.getElementById('btnCharts');
     var queriesTab  = document.getElementById('btnQueries');
-    if (adminTab != null) {
-      adminTab.click ();
-      return;
-    }
-    if (operationsTab != null) {
-      operationsTab.click ();
-      return;
-    }
-    if (queriesTab != null) {
-      queriesTab.click ();
+    if (reportsTab != null) {
+      reportsTab.click ();
       return;
     }
     if (chartsTab != null) {
       chartsTab.click ();
       return;
     }
-    if (reportsTab != null) {
-      reportsTab.click ();
+    if (queriesTab != null) {
+      queriesTab.click ();
+      return;
+    }
+    if (operationsTab != null) {
+      operationsTab.click ();
+      return;
+    }
+    if (adminTab != null) {
+      adminTab.click ();
       return;
     }
   }
@@ -54,11 +54,11 @@ require_once 'session.php';
   <div class="tab">
 <?php
 $tabcfg = [
-  array (0, 'Administration', 'Administration', ''),
-  array (1, 'Operations', 'Operations', ''),
   array (2, 'Reports', 'Reports', ''),
   array (2, 'Charts', 'Charts', ''),
   array (2, 'Queries', 'Queries', ''),
+  array (1, 'Operations', 'Operations', ''),
+  array (0, 'Administration', 'Administration', ''),
 ];
 
 foreach ($tabcfg as $tab) {
@@ -135,13 +135,7 @@ if (userLevel == 0) {
 
   <div id="Operations" class="tabcontent">
     <h3>Operations</h3>
-    <p>Operations stuff goes here.</p>
-    <p>TODO: Display a list of actions (open in new window):
-      <ul>
-        <li>Machine filter</li>
-        <li>Add new machine</li>
-      </ul>
-    </p>
+    <p><button onclick='window.open ("credsadd.php")'>Create new Login</button>
 <script>
 
 if (userLevel >= 0 && userLevel <= 1) {
@@ -151,7 +145,7 @@ if (userLevel >= 0 && userLevel <= 1) {
   }
 
   var machineOpsTable = new LiveTable (getMachineList);
-  machineOpsTable.setFieldSpec (0, 'READONLY');
+  machineOpsTable.setFieldSpec (0, 'LINK:credsmod.php');
   machineOpsTable.setFieldSpec (1, 'LINK:machineview.php');
   machineOpsTable.setFieldSpec (2, 'READONLY');
 
@@ -197,15 +191,24 @@ if (userLevel >= 0 && userLevel <= 1) {
   <div id="Queries" class="tabcontent">
     <h3>Queries</h3>
     <p>Queries stuff goes here</p>
-    <p>TODO: Display a list of actions (open in new window):
+    <p>TODO:
       <ul>
-        <li>Table of alerts + link to full table.</li>
         <li>Search for Queries</li>
-        <li>Open query-creator</li>
+        <li>Query-creator:</li>
+          <ul>
+            <li>Text area for SQL</li>
+            <li>Div for results table</li>
+            <li>button to save results</li>
+            <li>button to save query </li>
+          </ul>
         <li>Display 4 of the trending Queries for all users</li>
         <li>Display quicklinks based on what this user used most</li>
       </ul>
     </p>
+    <div id=query_lhs>
+    </div>
+    <div id=query_rhs>
+    </div>
   </div>
 
   <div id="Settings" class="tabcontent">
